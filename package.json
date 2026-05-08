@@ -1,0 +1,25 @@
+{
+  "name": "resumify",
+  "version": "0.1.0",
+  "description": "Onchain developer resume — ENS identity + Blockscout deployments + Sourcify verification + OLI labels",
+  "type": "module",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx src/server.ts",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "@ensdomains/ensjs": "^4",
+    "@google-cloud/bigquery": "^7",
+    "express": "^4",
+    "viem": "^2"
+  },
+  "devDependencies": {
+    "@types/express": "^4",
+    "@types/node": "^20",
+    "tsx": "^4",
+    "typescript": "^5"
+  }
+}
