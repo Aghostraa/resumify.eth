@@ -11,49 +11,62 @@ export default function StatsRow({ stats }: Props) {
   const overflow = stats.chainsDeployed.length - 5;
 
   return (
-    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-slide-up">
-      <StatCard label="total contracts" value={String(stats.totalDeployments)} />
+    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 animate-fade-up">
+      <StatCard label="Total Contracts" value={String(stats.totalDeployments)} />
 
-      <div className="bg-ink-800 border border-ink-600 rounded-lg p-4">
-        <p className="font-mono text-xs text-ink-500 mb-1">verified</p>
-        <p className="font-mono text-2xl font-semibold text-ink-100 mb-2">
-          {stats.verifiedDeployments}
-          <span className="text-ink-500 text-base font-normal"> / {stats.totalDeployments}</span>
+      <div className="hm-card p-5">
+        <p className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22] mb-2">
+          Verified
         </p>
-        <div className="h-1.5 bg-ink-700 rounded-full overflow-hidden">
+        <p className="font-display font-extralight text-3xl text-white mb-3">
+          {stats.verifiedDeployments}
+          <span className="text-white/30 text-base font-light"> / {stats.totalDeployments}</span>
+        </p>
+        <div className="h-[3px] bg-white/[0.06] rounded-sm overflow-hidden">
           <div
-            className="h-full bg-acid-500 rounded-full transition-all duration-700"
+            className="h-full bg-hm-green rounded-sm transition-all duration-700"
             style={{ width: `${rate}%` }}
           />
         </div>
-        <p className="font-mono text-xs text-ink-400 mt-1">{rate}% verification rate</p>
+        <p className="font-mono text-[10px] text-white/40 mt-2">{rate}% verification rate</p>
       </div>
 
-      <div className="bg-ink-800 border border-ink-600 rounded-lg p-4">
-        <p className="font-mono text-xs text-ink-500 mb-1">chains deployed</p>
-        <p className="font-mono text-2xl font-semibold text-ink-100 mb-2">{stats.chainsDeployed.length}</p>
+      <div className="hm-card p-5">
+        <p className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22] mb-2">
+          Chains Deployed
+        </p>
+        <p className="font-display font-extralight text-3xl text-white mb-3">
+          {stats.chainsDeployed.length}
+        </p>
         <div className="flex flex-wrap gap-1">
           {topChains.map((id) => (
-            <span key={id} className="font-mono text-xs px-1.5 py-0.5 rounded bg-ink-700 text-ink-300 border border-ink-600">
+            <span
+              key={id}
+              className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/55"
+            >
               {chainName(id)}
             </span>
           ))}
           {overflow > 0 && (
-            <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-ink-700 text-ink-400">+{overflow}</span>
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/40">
+              +{overflow}
+            </span>
           )}
         </div>
       </div>
 
-      <div className="bg-ink-800 border border-ink-600 rounded-lg p-4">
-        <p className="font-mono text-xs text-ink-500 mb-2">activity</p>
-        <div className="space-y-1.5">
+      <div className="hm-card p-5">
+        <p className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22] mb-3">
+          Activity
+        </p>
+        <div className="space-y-2">
           <div>
-            <p className="font-mono text-xs text-ink-500">first deploy</p>
-            <p className="font-mono text-xs text-ink-200">{formatDate(stats.firstDeployment)}</p>
+            <p className="text-[9px] font-light tracking-[0.22em] uppercase text-white/30">First deploy</p>
+            <p className="font-mono text-xs text-white/80">{formatDate(stats.firstDeployment)}</p>
           </div>
           <div>
-            <p className="font-mono text-xs text-ink-500">last deploy</p>
-            <p className="font-mono text-xs text-ink-200">{formatDate(stats.lastDeployment)}</p>
+            <p className="text-[9px] font-light tracking-[0.22em] uppercase text-white/30">Last deploy</p>
+            <p className="font-mono text-xs text-white/80">{formatDate(stats.lastDeployment)}</p>
           </div>
         </div>
       </div>
@@ -63,9 +76,9 @@ export default function StatsRow({ stats }: Props) {
 
 function StatCard({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-ink-800 border border-ink-600 rounded-lg p-4">
-      <p className="font-mono text-xs text-ink-500 mb-1">{label}</p>
-      <p className="font-mono text-3xl font-semibold text-ink-100">{value}</p>
+    <div className="hm-card p-5 flex flex-col justify-between">
+      <p className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22] mb-3">{label}</p>
+      <p className="font-display font-extralight text-4xl text-white">{value}</p>
     </div>
   );
 }

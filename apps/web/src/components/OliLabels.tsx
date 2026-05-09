@@ -19,27 +19,29 @@ export default function OliLabels({ oli, attestationUrl }: Props) {
 
   return (
     <div>
-      <div className="text-xs uppercase tracking-wider text-ink-400 mb-2">OLI labels</div>
+      <div className="text-[10px] font-light tracking-[0.26em] uppercase text-white/40 mb-3">
+        OLI Labels
+      </div>
       {hasAny ? (
-        <div className="bg-ink-900 border border-ink-700 rounded p-3 space-y-1 text-xs font-mono">
+        <div className="bg-white/[0.025] border border-white/[0.07] rounded-md p-3 space-y-1.5 font-mono text-[11px]">
           {fields
             .filter((f) => f.value)
             .map((f) => (
-              <div key={f.label} className="flex gap-2">
-                <span className="text-ink-500 w-32 shrink-0">{f.label}</span>
-                <span className="text-ink-200 break-all">{f.value as string}</span>
+              <div key={f.label} className="flex gap-3">
+                <span className="text-white/40 w-32 shrink-0">{f.label}</span>
+                <span className="text-white/85 break-all">{f.value as string}</span>
               </div>
             ))}
         </div>
       ) : (
-        <div className="text-xs text-ink-600 italic">No OLI labels for this address</div>
+        <div className="text-xs text-white/30 italic">No OLI labels for this address</div>
       )}
       {attestationUrl && (
         <a
           href={attestationUrl}
           target="_blank"
           rel="noreferrer"
-          className="inline-block text-xs text-acid-400 hover:underline mt-2"
+          className="inline-block mt-3 text-[10px] font-light tracking-[0.22em] uppercase text-hm-green hover:underline"
         >
           EAS attestation on Base ↗
         </a>

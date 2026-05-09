@@ -1,7 +1,5 @@
 import { useState } from 'react';
 import { nameContract } from '@enscribe/enscribe';
-import { createPublicClient, http } from 'viem';
-import { sepolia } from 'viem/chains';
 import type { WalletState } from '../hooks/useWallet';
 
 interface Props {
@@ -18,7 +16,7 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
   const [ensName, setEnsName] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  if (chainId !== 11155111) return null; // only Sepolia for now
+  if (chainId !== 11155111) return null;
 
   async function handleEnscribe() {
     if (!wallet.walletClient || !wallet.address) {
@@ -53,7 +51,7 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
         href={`https://app.ens.domains/${ensName}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="font-mono text-xs px-2.5 py-1 rounded border border-acid-400/50 text-acid-400 hover:border-acid-400 transition-colors"
+        className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-hm-green/40 text-hm-green hover:border-hm-green/70 transition-colors"
         title={ensName}
       >
         ✓ {ensName.split('.')[0]}
@@ -65,10 +63,10 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
     return (
       <button
         onClick={() => setState('idle')}
-        className="font-mono text-xs px-2.5 py-1 rounded border border-rose-400/50 text-rose-400 hover:border-rose-400 transition-colors"
+        className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-hm-red/40 text-hm-red hover:border-hm-red/70 transition-colors"
         title={error ?? 'failed'}
       >
-        ✗ retry
+        ✗ Retry
       </button>
     );
   }
@@ -77,10 +75,10 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
     <button
       onClick={handleEnscribe}
       disabled={state === 'busy'}
-      className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400 hover:border-acid-400 hover:text-acid-400 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
+      className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-white/[0.07] text-white/40 hover:border-white/30 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
       title="Name this contract on ENS via Enscribe"
     >
-      {state === 'busy' ? '…' : 'enscribe →'}
+      {state === 'busy' ? '…' : 'Enscribe →'}
     </button>
   );
 }

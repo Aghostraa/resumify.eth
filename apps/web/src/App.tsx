@@ -2,6 +2,9 @@ import { Routes, Route, NavLink } from 'react-router-dom';
 import Dashboard from './routes/Dashboard';
 import Analyzer from './routes/Analyzer';
 import Agent from './routes/Agent';
+import OctagonBackground from './components/OctagonBackground';
+import NavMark from './components/NavMark';
+import Footer from './components/Footer';
 
 function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
   return (
@@ -9,7 +12,9 @@ function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
       to={to}
       end
       className={({ isActive }) =>
-        `font-mono text-sm transition-colors ${isActive ? 'text-acid-400' : 'text-ink-400 hover:text-ink-100'}`
+        `text-[10px] font-light tracking-[0.22em] uppercase transition-colors ${
+          isActive ? 'text-white' : 'text-white/40 hover:text-white/80'
+        }`
       }
     >
       {children}
@@ -19,36 +24,43 @@ function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-ink-950 border-grid">
-      <header className="border-b border-ink-700/50 bg-ink-950/80 backdrop-blur-sm sticky top-0 z-10">
-        <div className="max-w-6xl mx-auto px-4 py-3 flex items-center gap-6">
-          <NavLink to="/" className="flex items-center gap-2 shrink-0">
-            <div className="w-2 h-2 rounded-full bg-acid-500 glow-green" />
-            <span className="font-mono font-semibold text-ink-100">contractid</span>
-            <span className="font-mono text-xs text-ink-600">v0.1</span>
+    <>
+      <OctagonBackground />
+
+      <div className="relative z-10 min-h-screen flex flex-col">
+        <header className="flex items-center justify-between px-12 py-6 border-b border-white/[0.07] animate-fade-down">
+          <NavLink to="/" className="flex items-center gap-3.5 shrink-0">
+            <NavMark size={36} />
+            <span className="font-display font-extralight text-lg tracking-[0.22em] uppercase text-white">
+              Hallmark
+            </span>
           </NavLink>
-          <nav className="flex gap-5">
-            <NavTab to="/">deployer</NavTab>
-            <NavTab to="/analyze">analyzer</NavTab>
-            <NavTab to="/agent">agent</NavTab>
+
+          <nav className="hidden md:flex items-center gap-8">
+            <NavTab to="/">Deployer</NavTab>
+            <NavTab to="/analyze">Analyzer</NavTab>
+            <NavTab to="/agent">Agent</NavTab>
           </nav>
-        </div>
-      </header>
 
-      <main className="max-w-6xl mx-auto px-4 py-8 space-y-5">
-        <Routes>
-          <Route path="/" element={<Dashboard />} />
-          <Route path="/analyze" element={<Analyzer />} />
-          <Route path="/c/:chainId/:address" element={<Analyzer />} />
-          <Route path="/agent" element={<Agent />} />
-        </Routes>
-      </main>
+          <div className="flex items-center gap-3">
+            <a className="hm-cta hidden sm:inline-flex" href="/extension">
+              Get the Extension
+            </a>
+            <div className="hm-cta hm-cta-primary">Connect Wallet</div>
+          </div>
+        </header>
 
-      <footer className="border-t border-ink-700/50 mt-16 py-4 text-center">
-        <p className="font-mono text-xs text-ink-700">
-          contractid · ETHPrague 2026 · Sourcify · OLI · ENS · EthGuard
-        </p>
-      </footer>
-    </div>
+        <main className="flex-1">
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/analyze" element={<Analyzer />} />
+            <Route path="/c/:chainId/:address" element={<Analyzer />} />
+            <Route path="/agent" element={<Agent />} />
+          </Routes>
+        </main>
+
+        <Footer />
+      </div>
+    </>
   );
 }

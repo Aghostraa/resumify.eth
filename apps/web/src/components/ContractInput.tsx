@@ -15,7 +15,12 @@ interface Props {
 
 type Mode = 'address' | 'source';
 
-export default function ContractInput({ onSubmit, disabled, initialAddress = '', initialChainId = 11155111 }: Props) {
+export default function ContractInput({
+  onSubmit,
+  disabled,
+  initialAddress = '',
+  initialChainId = 11155111,
+}: Props) {
   const [address, setAddress] = useState(initialAddress);
   const [sourceCode, setSourceCode] = useState('');
   const [chainId, setChainId] = useState(initialChainId);
@@ -28,88 +33,128 @@ export default function ContractInput({ onSubmit, disabled, initialAddress = '',
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-4">
-      <div className="flex gap-2 text-xs items-center">
-        <button
-          type="button"
-          onClick={() => setMode('address')}
-          className={`px-3 py-1 rounded ${mode === 'address' ? 'bg-acid-500 text-ink-950' : 'bg-ink-800 text-ink-300'}`}
-        >
-          Address
-        </button>
-        <button
-          type="button"
-          onClick={() => setMode('source')}
-          className={`px-3 py-1 rounded ${mode === 'source' ? 'bg-acid-500 text-ink-950' : 'bg-ink-800 text-ink-300'}`}
-        >
-          Raw source
-        </button>
+    <form onSubmit={handleSubmit} className="w-full max-w-[680px] mx-auto space-y-3 animate-fade-up">
+      <div className="flex items-center justify-between gap-3 flex-wrap">
+        <div className="flex gap-2">
+          <ModeButton active={mode === 'address'} onClick={() => setMode('address')}>
+            Address
+          </ModeButton>
+          <ModeButton active={mode === 'source'} onClick={() => setMode('source')}>
+            Raw Source
+          </ModeButton>
+        </div>
 
-        <div className="ml-auto">
+        <div className="relative">
           <select
             value={chainId}
             onChange={(e) => setChainId(Number(e.target.value))}
             disabled={disabled}
-            className="bg-ink-800 border border-ink-700 rounded px-2 py-1 text-xs text-ink-200 focus:border-acid-500 focus:outline-none"
+            className="appearance-none bg-white/[0.025] border border-white/[0.07] rounded-full pl-4 pr-9 py-2 text-[10px] font-light tracking-[0.22em] uppercase text-white/80 hover:border-white/20 focus:border-white/30 focus:outline-none transition-colors cursor-pointer"
           >
             <optgroup label="Mainnets">
               {ALL_CHAINS.filter((c) => !c.testnet).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id} className="bg-black text-white">
+                  {c.name}
+                </option>
               ))}
             </optgroup>
             <optgroup label="Testnets">
               {ALL_CHAINS.filter((c) => c.testnet).map((c) => (
-                <option key={c.id} value={c.id}>{c.name}</option>
+                <option key={c.id} value={c.id} className="bg-black text-white">
+                  {c.name}
+                </option>
               ))}
             </optgroup>
           </select>
+          <svg
+            width="9"
+            height="9"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.5"
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-white/40 pointer-events-none"
+          >
+            <polyline points="6 9 12 15 18 9" />
+          </svg>
         </div>
       </div>
 
       {mode === 'address' ? (
-        <input
-          type="text"
-          value={address}
-          onChange={(e) => setAddress(e.target.value)}
-          placeholder="0x..."
-          className="w-full bg-ink-900 border border-ink-700 rounded px-4 py-3 font-mono text-sm focus:border-acid-500 focus:outline-none"
-          disabled={disabled}
-        />
+        <div className="hm-input-row">
+          <input
+            type="text"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+            placeholder="0x... contract address"
+            className="hm-input"
+            disabled={disabled}
+            spellCheck={false}
+            autoComplete="off"
+          />
+          <button
+            type="submit"
+            disabled={disabled || !address}
+            className="hm-input-btn"
+          >
+            {disabled ? 'Analyzing…' : 'Identify'}
+          </button>
+        </div>
       ) : (
-        <textarea
-          value={sourceCode}
-          onChange={(e) => setSourceCode(e.target.value)}
-          placeholder="// Paste Solidity source"
-          rows={10}
-          className="w-full bg-ink-900 border border-ink-700 rounded px-4 py-3 font-mono text-xs focus:border-acid-500 focus:outline-none"
-          disabled={disabled}
-        />
+        <div className="hm-input-row flex-col">
+          <textarea
+            value={sourceCode}
+            onChange={(e) => setSourceCode(e.target.value)}
+            placeholder="// Paste Solidity source"
+            rows={10}
+            className="hm-input font-mono w-full resize-y"
+            disabled={disabled}
+          />
+          <div className="border-t border-white/[0.07] flex justify-end">
+            <button
+              type="submit"
+              disabled={disabled || !sourceCode}
+              className="hm-input-btn"
+              style={{ padding: '12px 28px' }}
+            >
+              {disabled ? 'Analyzing…' : 'Identify'}
+            </button>
+          </div>
+        </div>
       )}
 
-      <div className="flex items-center justify-between">
-        <div className="flex gap-2 text-xs">
-          {mode === 'address' &&
-            SAMPLES.map((s) => (
-              <button
-                key={s.address}
-                type="button"
-                onClick={() => setAddress(s.address)}
-                className="px-2 py-1 text-ink-400 hover:text-acid-400"
-                disabled={disabled}
+      {mode === 'address' && (
+        <div className="text-[9px] font-light tracking-[0.22em] uppercase text-white/[0.14] pl-1">
+          Try an example —{' '}
+          {SAMPLES.map((s, i) => (
+            <span key={s.address}>
+              <span
+                onClick={() => !disabled && setAddress(s.address)}
+                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
               >
                 {s.label}
-              </button>
-            ))}
+              </span>
+              {i < SAMPLES.length - 1 && <span className="text-white/[0.14]"> · </span>}
+            </span>
+          ))}
         </div>
-
-        <button
-          type="submit"
-          disabled={disabled || (mode === 'address' ? !address : !sourceCode)}
-          className="px-6 py-2 bg-acid-500 text-ink-950 rounded font-medium disabled:opacity-50 hover:bg-acid-400"
-        >
-          {disabled ? 'Analyzing…' : 'Analyze'}
-        </button>
-      </div>
+      )}
     </form>
+  );
+}
+
+function ModeButton({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`px-4 py-2 rounded-full border text-[10px] font-light tracking-[0.22em] uppercase transition-colors ${
+        active
+          ? 'border-white/30 text-white bg-white/[0.04]'
+          : 'border-white/[0.07] text-white/40 hover:border-white/20 hover:text-white/80'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

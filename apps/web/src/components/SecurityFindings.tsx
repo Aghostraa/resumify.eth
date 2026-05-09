@@ -15,18 +15,24 @@ export default function SecurityFindings({ findings }: Props) {
   if (!findings || findings.length === 0) return null;
   return (
     <div>
-      <div className="text-xs uppercase tracking-wider text-ink-400 mb-2">EthGuard heuristics</div>
-      <ul className="space-y-1.5 text-xs">
+      <div className="text-[10px] font-light tracking-[0.26em] uppercase text-white/40 mb-3">
+        EthGuard Heuristics
+      </div>
+      <ul className="space-y-2">
         {findings.map((f) => (
-          <li key={f.check} className="flex items-start gap-2">
-            <span className={f.passed ? 'text-acid-500' : 'text-rose-400'}>
+          <li key={f.check} className="flex items-start gap-2.5">
+            <span className={f.passed ? 'text-hm-green text-base leading-none mt-0.5' : 'text-hm-red text-base leading-none mt-0.5'}>
               {f.passed ? '✓' : '✕'}
             </span>
-            <div className="flex-1">
-              <span className={f.passed ? 'text-ink-300' : 'text-rose-300'}>
+            <div className="flex-1 min-w-0">
+              <span
+                className={`text-xs font-light tracking-[0.02em] ${
+                  f.passed ? 'text-white/85' : 'text-hm-red/90'
+                }`}
+              >
                 {LABELS[f.check]}
               </span>
-              {f.detail && <span className="text-ink-500 ml-2">— {f.detail}</span>}
+              {f.detail && <span className="ml-2 font-mono text-[10px] text-white/40">— {f.detail}</span>}
             </div>
           </li>
         ))}

@@ -43,20 +43,24 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
   }
 
   return (
-    <div className="animate-slide-up">
-      <div className="flex flex-wrap items-center justify-between gap-3 mb-3">
-        <h3 className="font-mono text-sm text-ink-400">
-          deployments <span className="text-ink-600">({filtered.length})</span>
-        </h3>
+    <div className="animate-fade-up">
+      <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
+        <div className="flex items-baseline gap-3">
+          <span className="text-[11px] tracking-[0.30em] uppercase text-white/55">Deployments</span>
+          <span className="font-mono text-xs text-white/30">({filtered.length})</span>
+        </div>
         <div className="flex gap-1">
           {(['all', 'verified', 'unverified'] as const).map((f) => (
             <button
               key={f}
-              onClick={() => { setFilter(f); setPage(0); }}
-              className={`font-mono text-xs px-3 py-1 rounded transition-colors ${
+              onClick={() => {
+                setFilter(f);
+                setPage(0);
+              }}
+              className={`text-[10px] font-light tracking-[0.22em] uppercase px-3 py-1.5 rounded-full border transition-colors ${
                 filter === f
-                  ? 'bg-ink-600 text-ink-100'
-                  : 'text-ink-500 hover:text-ink-300'
+                  ? 'border-white/30 text-white bg-white/[0.04]'
+                  : 'border-white/[0.07] text-white/40 hover:border-white/20 hover:text-white/80'
               }`}
             >
               {f}
@@ -65,17 +69,21 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
         </div>
       </div>
 
-      <div className="bg-ink-800 border border-ink-600 rounded-lg overflow-hidden">
+      <div className="hm-card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead>
-              <tr className="border-b border-ink-700">
-                <th className="text-left px-4 py-2.5 font-mono text-xs text-ink-500 font-normal">contract</th>
-                <th className="text-left px-4 py-2.5 font-mono text-xs text-ink-500 font-normal">address</th>
-                <Th label="chain" sortKey="chainId" current={sortKey} onSort={handleSort} />
-                <Th label="deployed" sortKey="deployedAt" current={sortKey} onSort={handleSort} />
-                <Th label="verified" sortKey="verified" current={sortKey} onSort={handleSort} />
-                <th className="px-4 py-2.5" />
+              <tr className="border-b border-white/[0.07]">
+                <th className="text-left px-4 py-3 text-[9px] tracking-[0.26em] uppercase text-white/[0.22] font-normal">
+                  Contract
+                </th>
+                <th className="text-left px-4 py-3 text-[9px] tracking-[0.26em] uppercase text-white/[0.22] font-normal">
+                  Address
+                </th>
+                <Th label="Chain" sortKey="chainId" current={sortKey} onSort={handleSort} />
+                <Th label="Deployed" sortKey="deployedAt" current={sortKey} onSort={handleSort} />
+                <Th label="Verified" sortKey="verified" current={sortKey} onSort={handleSort} />
+                <th className="px-4 py-3" />
               </tr>
             </thead>
             <tbody>
@@ -91,7 +99,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
               ))}
               {pageItems.length === 0 && (
                 <tr>
-                  <td colSpan={6} className="px-4 py-8 text-center font-mono text-sm text-ink-600">
+                  <td colSpan={6} className="px-4 py-8 text-center text-xs text-white/30">
                     no contracts
                   </td>
                 </tr>
@@ -101,24 +109,24 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
         </div>
 
         {pageCount > 1 && (
-          <div className="border-t border-ink-700 px-4 py-2 flex items-center justify-between">
-            <span className="font-mono text-xs text-ink-500">
+          <div className="border-t border-white/[0.07] px-4 py-3 flex items-center justify-between">
+            <span className="font-mono text-[10px] text-white/40">
               {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
             </span>
-            <div className="flex gap-1">
+            <div className="flex gap-2">
               <button
                 onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
-                className="font-mono text-xs px-2 py-1 rounded text-ink-400 hover:text-ink-100 disabled:text-ink-700 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-light tracking-[0.22em] uppercase px-3 py-1 rounded-full text-white/40 hover:text-white disabled:text-white/[0.12] disabled:cursor-not-allowed transition-colors"
               >
-                ← prev
+                ← Prev
               </button>
               <button
                 onClick={() => setPage((p) => Math.min(pageCount - 1, p + 1))}
                 disabled={page >= pageCount - 1}
-                className="font-mono text-xs px-2 py-1 rounded text-ink-400 hover:text-ink-100 disabled:text-ink-700 disabled:cursor-not-allowed transition-colors"
+                className="text-[10px] font-light tracking-[0.22em] uppercase px-3 py-1 rounded-full text-white/40 hover:text-white disabled:text-white/[0.12] disabled:cursor-not-allowed transition-colors"
               >
-                next →
+                Next →
               </button>
             </div>
           </div>
@@ -139,13 +147,25 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
   );
 }
 
-function Th({ label, sortKey, current, onSort }: { label: string; sortKey: SortKey; current: SortKey; onSort: (k: SortKey) => void }) {
+function Th({
+  label,
+  sortKey,
+  current,
+  onSort,
+}: {
+  label: string;
+  sortKey: SortKey;
+  current: SortKey;
+  onSort: (k: SortKey) => void;
+}) {
   const active = current === sortKey;
   return (
-    <th className="text-left px-4 py-2.5 font-mono text-xs font-normal">
+    <th className="text-left px-4 py-3 font-normal">
       <button
         onClick={() => onSort(sortKey)}
-        className={`flex items-center gap-1 transition-colors ${active ? 'text-ink-200' : 'text-ink-500 hover:text-ink-300'}`}
+        className={`flex items-center gap-1 text-[9px] tracking-[0.26em] uppercase transition-colors ${
+          active ? 'text-white/80' : 'text-white/[0.22] hover:text-white/55'
+        }`}
       >
         {label}
         <span className={active ? 'opacity-100' : 'opacity-0'}>↓</span>
@@ -154,7 +174,13 @@ function Th({ label, sortKey, current, onSort }: { label: string; sortKey: SortK
   );
 }
 
-function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
+function ContractRow({
+  contract: d,
+  index,
+  onVerify,
+  onOpenAnalyzer,
+  wallet,
+}: {
   contract: DeployedContract;
   index: number;
   onVerify: () => void;
@@ -165,34 +191,32 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
 
   return (
     <tr
-      className="border-b border-ink-700/50 last:border-0 hover:bg-ink-700/30 transition-colors"
+      className="border-b border-white/[0.04] last:border-0 hover:bg-white/[0.02] transition-colors"
       style={{ animationDelay: `${index * 20}ms` }}
     >
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3">
         <div className="flex items-center gap-2">
           {d.isScam && (
-            <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-rose-400/10 border border-rose-400/30 text-rose-400">
+            <span className="font-mono text-[9px] px-2 py-0.5 rounded-md bg-[rgba(255,69,58,0.10)] border border-[rgba(255,69,58,0.25)] text-hm-red">
               SCAM
             </span>
           )}
-          <span className="font-mono text-sm text-ink-200">
-            {name ?? <span className="text-ink-600">unnamed</span>}
+          <span className="font-mono text-sm text-white/85">
+            {name ?? <span className="text-white/30">unnamed</span>}
           </span>
-          {d.compilerVersion && (
-            <span className="font-mono text-xs text-ink-600">{d.compilerVersion}</span>
-          )}
+          {d.compilerVersion && <span className="font-mono text-[10px] text-white/30">{d.compilerVersion}</span>}
         </div>
       </td>
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3">
         <div className="flex items-center gap-2">
-          <span className="font-mono text-xs text-ink-400">{truncateAddress(d.address)}</span>
+          <span className="font-mono text-xs text-white/55">{truncateAddress(d.address)}</span>
           <CopyButton text={d.address} />
           {d.txHash && (
             <a
               href={`https://eth.blockscout.com/tx/${d.txHash}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-ink-600 hover:text-blue-400 transition-colors"
+              className="text-white/30 hover:text-hm-blue transition-colors"
               title="View tx"
             >
               <ExternalIcon />
@@ -200,34 +224,34 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
           )}
         </div>
       </td>
-      <td className="px-4 py-2.5">
-        <span className="font-mono text-xs px-1.5 py-0.5 rounded bg-ink-700 border border-ink-600 text-ink-300">
+      <td className="px-4 py-3">
+        <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/55">
           {chainName(d.chainId)}
         </span>
       </td>
-      <td className="px-4 py-2.5">
-        <span className="font-mono text-xs text-ink-500">{formatDate(d.deployedAt)}</span>
+      <td className="px-4 py-3">
+        <span className="font-mono text-xs text-white/40">{formatDate(d.deployedAt)}</span>
       </td>
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3">
         {d.verified ? (
-          <span className="flex items-center gap-1 font-mono text-xs text-acid-500">
-            <span>✓</span> verified
+          <span className="flex items-center gap-1.5 font-mono text-xs text-hm-green">
+            <span className="hm-eyebrow-dot" /> Verified
           </span>
         ) : (
-          <span className="flex items-center gap-1 font-mono text-xs text-rose-400">
-            <span>✗</span> unverified
+          <span className="flex items-center gap-1.5 font-mono text-xs text-hm-red/80">
+            <span>✗</span> Unverified
           </span>
         )}
       </td>
-      <td className="px-4 py-2.5">
+      <td className="px-4 py-3">
         <div className="flex gap-1.5 flex-wrap">
           {onOpenAnalyzer && (
             <button
               onClick={onOpenAnalyzer}
-              className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400 hover:border-acid-400 hover:text-acid-400 transition-colors"
-              title="Score with ContractID analyzer"
+              className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-white/[0.07] text-white/40 hover:border-white/30 hover:text-white transition-colors"
+              title="Score with Hallmark analyzer"
             >
-              score →
+              Score →
             </button>
           )}
           {d.verified && wallet && (
@@ -241,9 +265,9 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
           {!d.verified && !d.isScam && (
             <button
               onClick={onVerify}
-              className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400 hover:border-acid-500 hover:text-acid-500 transition-colors"
+              className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-white/[0.07] text-white/40 hover:border-hm-green/40 hover:text-hm-green transition-colors"
             >
-              verify →
+              Verify →
             </button>
           )}
         </div>
@@ -262,14 +286,19 @@ function CopyButton({ text }: { text: string }) {
   }
 
   return (
-    <button onClick={copy} className="text-ink-600 hover:text-ink-300 transition-colors" title="Copy address">
+    <button
+      onClick={copy}
+      className="text-white/30 hover:text-white transition-colors"
+      title="Copy address"
+    >
       {copied ? (
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#39d353" strokeWidth="2.5">
-          <polyline points="20 6 9 17 4 12"/>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#30d158" strokeWidth="2.5">
+          <polyline points="20 6 9 17 4 12" />
         </svg>
       ) : (
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+          <rect x="9" y="9" width="13" height="13" rx="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
       )}
     </button>
@@ -279,7 +308,9 @@ function CopyButton({ text }: { text: string }) {
 function ExternalIcon() {
   return (
     <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/>
+      <path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6" />
+      <polyline points="15 3 21 3 21 9" />
+      <line x1="10" y1="14" x2="21" y2="3" />
     </svg>
   );
 }

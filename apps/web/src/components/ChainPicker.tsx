@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { ALL_CHAINS, MAINNET_CHAINS, TESTNET_CHAINS, type ChainInfo } from '../utils/chains';
 
 interface Props {
-  selected: number[] | null; // null = all mainnet (default)
+  selected: number[] | null; // null = default
   onChange: (chains: number[] | null) => void;
 }
 
@@ -22,7 +22,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
     ? ALL_CHAINS.filter(
         (c) =>
           c.name.toLowerCase().includes(query.toLowerCase()) ||
-          String(c.id).includes(query)
+          String(c.id).includes(query),
       )
     : pool;
 
@@ -41,15 +41,15 @@ export default function ChainPicker({ selected, onChange }: Props) {
     return () => document.removeEventListener('mousedown', handleClick);
   }, [open]);
 
-  const toggle = useCallback((chain: ChainInfo) => {
-    const next = new Set(selectedSet);
-    if (next.has(chain.id)) {
-      next.delete(chain.id);
-    } else {
-      next.add(chain.id);
-    }
-    onChange(next.size === 0 ? null : [...next]);
-  }, [selectedSet, onChange]);
+  const toggle = useCallback(
+    (chain: ChainInfo) => {
+      const next = new Set(selectedSet);
+      if (next.has(chain.id)) next.delete(chain.id);
+      else next.add(chain.id);
+      onChange(next.size === 0 ? null : [...next]);
+    },
+    [selectedSet, onChange],
+  );
 
   function selectAll() {
     onChange(pool.map((c) => c.id));
@@ -63,123 +63,155 @@ export default function ChainPicker({ selected, onChange }: Props) {
   }
 
   const label = isDefault
-    ? `top 10 chains`
+    ? 'Top 10 Chains'
     : selected!.length === 0
-    ? 'no unverified scan'
+    ? 'No Chains'
     : selected!.length === 1
-    ? (ALL_CHAINS.find((c) => c.id === selected![0])?.name ?? `Chain ${selected![0]}`)
-    : `${selected!.length} chains`;
+    ? ALL_CHAINS.find((c) => c.id === selected![0])?.name ?? `Chain ${selected![0]}`
+    : `${selected!.length} Chains`;
 
   return (
     <div className="relative" ref={panelRef}>
       <button
         onClick={() => setOpen((o) => !o)}
-        className={`flex items-center gap-2 px-3 py-2 rounded-md border font-mono text-xs transition-colors whitespace-nowrap
-          ${open
-            ? 'bg-ink-700 border-acid-500 text-ink-100'
-            : 'bg-ink-800 border-ink-600 text-ink-400 hover:border-ink-500 hover:text-ink-200'
-          }`}
+        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-light tracking-[0.22em] uppercase whitespace-nowrap transition-colors ${
+          open
+            ? 'border-white/30 text-white bg-white/[0.04]'
+            : 'border-white/[0.07] text-white/40 hover:border-white/30 hover:text-white'
+        }`}
       >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <ellipse cx="12" cy="5" rx="9" ry="3" />
+          <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3" />
+          <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5" />
         </svg>
         {label}
-        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"
-          className={`transition-transform ${open ? 'rotate-180' : ''}`}>
-          <polyline points="6 9 12 15 18 9"/>
+        <svg
+          width="9"
+          height="9"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          className={`transition-transform ${open ? 'rotate-180' : ''}`}
+        >
+          <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-1.5 z-50 w-80 bg-ink-800 border border-ink-600 rounded-lg shadow-2xl animate-fade-in">
-          {/* Search */}
-          <div className="p-2 border-b border-ink-700">
+        <div className="absolute right-0 top-full mt-2 z-50 w-80 bg-black border border-white/10 rounded-[10px] shadow-2xl animate-fade-in overflow-hidden">
+          <div className="p-2 border-b border-white/[0.07]">
             <div className="relative">
-              <svg className="absolute left-2.5 top-1/2 -translate-y-1/2 text-ink-500" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+              <svg
+                className="absolute left-2.5 top-1/2 -translate-y-1/2 text-white/30"
+                width="12"
+                height="12"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
               </svg>
               <input
                 ref={inputRef}
                 type="text"
                 value={query}
-                onChange={(e) => { setQuery(e.target.value); }}
-                placeholder="search chains…"
-                className="w-full bg-ink-900 border border-ink-600 rounded pl-7 pr-3 py-1.5 font-mono text-xs text-ink-100
-                           placeholder-ink-600 focus:outline-none focus:border-acid-500 transition-colors"
+                onChange={(e) => setQuery(e.target.value)}
+                placeholder="Search chains…"
+                className="w-full bg-white/[0.025] border border-white/[0.07] rounded-md pl-7 pr-3 py-2 text-xs text-white placeholder-white/20 focus:outline-none focus:border-white/30 transition-colors"
               />
               {query && (
-                <button onClick={() => setQuery('')}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 text-ink-600 hover:text-ink-300">
+                <button
+                  onClick={() => setQuery('')}
+                  className="absolute right-2 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
+                >
                   ×
                 </button>
               )}
             </div>
           </div>
 
-          {/* Tabs */}
           {!query && (
-            <div className="flex border-b border-ink-700">
+            <div className="flex border-b border-white/[0.07]">
               {(['mainnet', 'testnet', 'all'] as const).map((t) => (
-                <button key={t} onClick={() => setTab(t)}
-                  className={`flex-1 py-1.5 font-mono text-xs transition-colors ${
-                    tab === t ? 'text-ink-100 border-b-2 border-acid-500 -mb-px' : 'text-ink-500 hover:text-ink-300'
-                  }`}>
+                <button
+                  key={t}
+                  onClick={() => setTab(t)}
+                  className={`flex-1 py-2 text-[10px] font-light tracking-[0.22em] uppercase transition-colors ${
+                    tab === t
+                      ? 'text-white border-b-2 border-white -mb-px'
+                      : 'text-white/30 hover:text-white/70'
+                  }`}
+                >
                   {t}
                 </button>
               ))}
             </div>
           )}
 
-          {/* Explanation */}
-          <div className="px-3 py-1.5 border-b border-ink-700 bg-ink-900/50">
-            <p className="font-mono text-xs text-ink-600">
-              verified contracts come from Sourcify (all chains). these chains are scanned for <span className="text-ink-500">unverified</span> contracts only.
+          <div className="px-3 py-2 border-b border-white/[0.07] bg-white/[0.02]">
+            <p className="text-[10px] font-light leading-relaxed text-white/40">
+              Verified contracts come from Sourcify (all chains). These chains are scanned for{' '}
+              <span className="text-white/55">unverified</span> contracts only.
             </p>
           </div>
 
-          {/* Quick actions */}
-          <div className="flex items-center gap-2 px-3 py-1.5 border-b border-ink-700">
-            <button onClick={selectAll}
-              className="font-mono text-xs text-acid-500 hover:text-acid-400 transition-colors">
-              select {query ? 'found' : tab}
+          <div className="flex items-center gap-2 px-3 py-2 border-b border-white/[0.07]">
+            <button
+              onClick={selectAll}
+              className="text-[10px] font-light tracking-[0.18em] uppercase text-hm-green hover:text-hm-green/80 transition-colors"
+            >
+              Select {query ? 'found' : tab}
             </button>
-            <span className="text-ink-700">·</span>
-            <button onClick={clearAll}
-              className="font-mono text-xs text-ink-500 hover:text-ink-300 transition-colors">
-              clear
+            <span className="text-white/20">·</span>
+            <button
+              onClick={clearAll}
+              className="text-[10px] font-light tracking-[0.18em] uppercase text-white/40 hover:text-white transition-colors"
+            >
+              Clear
             </button>
-            <span className="text-ink-700">·</span>
-            <button onClick={resetDefault}
-              className="font-mono text-xs text-ink-500 hover:text-ink-300 transition-colors">
-              reset default
+            <span className="text-white/20">·</span>
+            <button
+              onClick={resetDefault}
+              className="text-[10px] font-light tracking-[0.18em] uppercase text-white/40 hover:text-white transition-colors"
+            >
+              Reset
             </button>
-            <span className="ml-auto font-mono text-xs text-ink-600">{selectedSet.size} selected</span>
+            <span className="ml-auto text-[10px] font-light tracking-[0.18em] uppercase text-white/30">
+              {selectedSet.size} selected
+            </span>
           </div>
 
-          {/* Chain list */}
           <div className="max-h-60 overflow-y-auto py-1">
             {filtered.length === 0 ? (
-              <p className="font-mono text-xs text-ink-600 text-center py-4">no chains match</p>
+              <p className="text-xs text-white/30 text-center py-4">No chains match</p>
             ) : (
               filtered.map((chain) => {
                 const checked = selectedSet.has(chain.id);
                 return (
-                  <label key={chain.id}
-                    className="flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-ink-700/50 transition-colors">
-                    <div className={`w-3.5 h-3.5 rounded border flex items-center justify-center shrink-0 transition-colors ${
-                      checked ? 'bg-acid-500 border-acid-500' : 'border-ink-500'
-                    }`}>
+                  <label
+                    key={chain.id}
+                    className="flex items-center gap-2.5 px-3 py-1.5 cursor-pointer hover:bg-white/[0.04] transition-colors"
+                  >
+                    <div
+                      className={`w-3.5 h-3.5 rounded-[3px] border flex items-center justify-center shrink-0 transition-colors ${
+                        checked ? 'bg-white border-white' : 'border-white/30'
+                      }`}
+                    >
                       {checked && (
-                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#080b0f" strokeWidth="3">
-                          <polyline points="20 6 9 17 4 12"/>
+                        <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="#000" strokeWidth="3">
+                          <polyline points="20 6 9 17 4 12" />
                         </svg>
                       )}
                     </div>
                     <input type="checkbox" checked={checked} onChange={() => toggle(chain)} className="sr-only" />
-                    <span className="font-mono text-xs text-ink-200 flex-1">{chain.name}</span>
-                    <span className="font-mono text-xs text-ink-600">{chain.id}</span>
+                    <span className="text-xs text-white/80 flex-1 font-mono">{chain.name}</span>
+                    <span className="text-xs text-white/30 font-mono">{chain.id}</span>
                     {chain.testnet && (
-                      <span className="font-mono text-xs text-amber-400/70">test</span>
+                      <span className="text-[9px] tracking-[0.2em] uppercase text-hm-amber/70">test</span>
                     )}
                   </label>
                 );
@@ -187,13 +219,15 @@ export default function ChainPicker({ selected, onChange }: Props) {
             )}
           </div>
 
-          {/* Footer */}
-          <div className="border-t border-ink-700 p-2">
+          <div className="border-t border-white/[0.07] p-2">
             <button
-              onClick={() => { setOpen(false); setQuery(''); }}
-              className="w-full font-mono text-xs py-1.5 bg-ink-700 hover:bg-ink-600 text-ink-200 rounded transition-colors"
+              onClick={() => {
+                setOpen(false);
+                setQuery('');
+              }}
+              className="w-full text-[10px] font-light tracking-[0.22em] uppercase py-2 bg-white text-black rounded-md hover:opacity-90 transition-opacity"
             >
-              apply →
+              Apply →
             </button>
           </div>
         </div>

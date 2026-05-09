@@ -3,44 +3,155 @@
 @tailwind utilities;
 
 @layer base {
-  * {
-    box-sizing: border-box;
-  }
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
   html {
-    background-color: #080b0f;
-    color: #c9d1d9;
-    font-family: 'IBM Plex Sans', system-ui, sans-serif;
+    background-color: #000;
+    color: #fff;
+    font-family: 'Outfit', system-ui, sans-serif;
+    font-weight: 300;
     -webkit-font-smoothing: antialiased;
   }
   body {
-    @apply antialiased;
+    background: #000;
+    overflow-x: hidden;
   }
-  ::-webkit-scrollbar {
-    width: 6px;
-    height: 6px;
-  }
-  ::-webkit-scrollbar-track { background: #0d1117; }
-  ::-webkit-scrollbar-thumb { background: #30363d; border-radius: 3px; }
-  ::-webkit-scrollbar-thumb:hover { background: #484f58; }
+  ::-webkit-scrollbar { width: 6px; height: 6px; }
+  ::-webkit-scrollbar-track { background: #000; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.22); }
 }
 
 @layer utilities {
   .font-mono {
     font-family: 'JetBrains Mono', 'Fira Code', monospace;
   }
-  .border-grid {
-    background-image:
-      linear-gradient(rgba(48, 54, 61, 0.3) 1px, transparent 1px),
-      linear-gradient(90deg, rgba(48, 54, 61, 0.3) 1px, transparent 1px);
-    background-size: 40px 40px;
+  .font-display {
+    font-family: 'Outfit', system-ui, sans-serif;
   }
-  .glow-green {
-    box-shadow: 0 0 12px rgba(57, 211, 83, 0.15);
+
+  /* Hallmark surfaces */
+  .hm-border    { border-color: rgba(255,255,255,0.07); }
+  .hm-surface   { background: rgba(255,255,255,0.03); }
+  .hm-surface-2 { background: rgba(255,255,255,0.025); }
+  .hm-divider   {
+    background: linear-gradient(to right, transparent, rgba(255,255,255,0.07) 25%, rgba(255,255,255,0.07) 75%, transparent);
   }
-  .text-gradient {
-    background: linear-gradient(135deg, #39d353, #56d364);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
+
+  /* Eyebrow dot used across the design */
+  .hm-eyebrow-dot {
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: #30d158;
+    box-shadow: 0 0 8px #30d158;
+  }
+
+  /* Pill base */
+  .hm-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 100px;
+    padding: 7px 18px;
+    font-size: 9px;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.28);
+    transition: border-color 0.25s, color 0.25s, background 0.25s;
+  }
+  .hm-pill:hover { border-color: rgba(255,255,255,0.28); color: rgba(255,255,255,0.85); }
+
+  .hm-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 100px;
+    padding: 9px 22px;
+    font-size: 10px;
+    font-weight: 300;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.55);
+    cursor: pointer;
+    transition: border-color 0.25s, color 0.25s, background 0.25s;
+    background: transparent;
+  }
+  .hm-cta:hover {
+    border-color: rgba(255,255,255,0.28);
+    color: #fff;
+    background: rgba(255,255,255,0.04);
+  }
+  .hm-cta-primary {
+    border-color: rgba(255,255,255,0.22);
+    color: #fff;
+  }
+
+  .hm-card {
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    background: rgba(255,255,255,0.03);
+  }
+
+  .hm-input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 16px 20px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    letter-spacing: 0.04em;
+    color: rgba(255,255,255,0.85);
+    min-width: 0;
+  }
+  .hm-input::placeholder { color: rgba(255,255,255,0.18); }
+
+  .hm-input-row {
+    display: flex;
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 10px;
+    overflow: hidden;
+    background: rgba(255,255,255,0.025);
+    transition: border-color 0.25s, background 0.25s;
+  }
+  .hm-input-row:focus-within {
+    border-color: rgba(255,255,255,0.18);
+    background: rgba(255,255,255,0.04);
+  }
+
+  .hm-input-btn {
+    background: #fff;
+    border: none;
+    padding: 0 28px;
+    font-family: 'Outfit', sans-serif;
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: #000;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+  }
+  .hm-input-btn:hover { opacity: 0.88; }
+  .hm-input-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+  .hm-section-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.18);
+  }
+  .hm-section-title {
+    font-size: 11px;
+    letter-spacing: 0.30em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.35);
   }
 }

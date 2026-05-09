@@ -66,74 +66,152 @@ export default function Dashboard() {
 
   const chainCount = selectedChains === null ? DEFAULT_BLOCKSCOUT_CHAINS.length : selectedChains.length;
 
+  if (state === 'idle') {
+    return (
+      <section className="flex flex-col items-center text-center px-6 md:px-12 pt-20 pb-16">
+        {/* Eyebrow */}
+        <div className="flex items-center gap-2 mb-8 animate-fade-up">
+          <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
+          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
+            Live on Ethereum Sepolia
+          </div>
+        </div>
+
+        {/* Headline */}
+        <h1
+          className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
+          style={{ fontSize: 'clamp(36px, 6vw, 76px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
+        >
+          Every developer<br />
+          <em className="not-italic text-white/[0.28]">deserves</em> a resume
+        </h1>
+
+        {/* Sub */}
+        <p
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] mb-12 animate-fade-up"
+          style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
+        >
+          Search any address or ENS name. Hallmark surfaces every contract you've shipped across
+          100+ chains, scores them, and turns your onchain history into a developer resume.
+        </p>
+
+        {/* Search */}
+        <div
+          className="w-full max-w-[640px] flex flex-col gap-3 mb-12 animate-fade-up"
+          style={{ animationDelay: '0.3s', animationFillMode: 'both', opacity: 0 }}
+        >
+          <SearchBar onSearch={search} loading={false} />
+          <div className="flex items-center justify-between gap-3 px-1">
+            <div className="text-[9px] font-light tracking-[0.22em] uppercase text-white/[0.14]">
+              Try —{' '}
+              <span
+                onClick={() => void search('vitalik.eth')}
+                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
+              >
+                vitalik.eth
+              </span>{' '}
+              ·{' '}
+              <span
+                onClick={() => void search('nick.eth')}
+                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
+              >
+                nick.eth
+              </span>
+            </div>
+            <ChainPicker selected={selectedChains} onChange={handleChainsChange} />
+          </div>
+        </div>
+
+        {/* Stats */}
+        <div
+          className="w-full max-w-[820px] flex items-center border border-white/[0.07] rounded-[10px] overflow-hidden animate-fade-up"
+          style={{ animationDelay: '0.4s', animationFillMode: 'both', opacity: 0 }}
+        >
+          <StatCell value="27M+" label="Verified Contracts" />
+          <StatCell value="100+" label="EVM Chains" />
+          <StatCell value="ENS" label="Identity Layer" />
+          <StatCell value="0" label="Hardcoded Values" />
+        </div>
+
+        {/* Wallet status */}
+        <div
+          className="mt-10 flex items-center gap-3 animate-fade-up"
+          style={{ animationDelay: '0.5s', animationFillMode: 'both', opacity: 0 }}
+        >
+          {wallet.address ? (
+            <>
+              <span className="font-mono text-xs text-hm-green">
+                {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
+              </span>
+              <button onClick={wallet.disconnect} className="hm-cta">
+                Disconnect
+              </button>
+            </>
+          ) : (
+            <button onClick={() => void wallet.connect()} disabled={wallet.connecting} className="hm-cta">
+              {wallet.connecting ? 'Connecting…' : 'Connect Wallet'}
+            </button>
+          )}
+        </div>
+      </section>
+    );
+  }
+
   return (
-    <>
-      <div className="flex items-center gap-3">
+    <section className="px-6 md:px-12 py-12 max-w-[1100px] mx-auto space-y-8">
+      <div className="flex items-center gap-3 flex-wrap">
         <div className="flex-1 min-w-0">
           <SearchBar onSearch={search} loading={state === 'loading'} />
         </div>
         <ChainPicker selected={selectedChains} onChange={handleChainsChange} />
         {wallet.address ? (
           <div className="flex items-center gap-2 shrink-0">
-            <span className="font-mono text-xs text-acid-400 hidden sm:block">
+            <span className="font-mono text-xs text-hm-green hidden sm:block">
               {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
             </span>
-            <button
-              onClick={wallet.disconnect}
-              className="font-mono text-xs px-2.5 py-1.5 rounded border border-ink-600 text-ink-500 hover:text-ink-300 transition-colors"
-            >
-              disconnect
+            <button onClick={wallet.disconnect} className="hm-cta">
+              Disconnect
             </button>
           </div>
         ) : (
-          <button
-            onClick={() => void wallet.connect()}
-            disabled={wallet.connecting}
-            className="font-mono text-xs px-3 py-1.5 rounded border border-acid-500/50 text-acid-400 hover:border-acid-400 disabled:opacity-40 transition-colors shrink-0"
-          >
-            {wallet.connecting ? 'connecting…' : 'connect wallet'}
+          <button onClick={() => void wallet.connect()} disabled={wallet.connecting} className="hm-cta">
+            {wallet.connecting ? 'Connecting…' : 'Connect Wallet'}
           </button>
         )}
       </div>
-
-      {state === 'idle' && (
-        <div className="flex flex-col items-center justify-center py-24 space-y-4 animate-fade-in">
-          <div className="text-center space-y-2">
-            <h1 className="font-mono text-4xl font-semibold text-gradient">contractid</h1>
-            <p className="font-mono text-sm text-ink-500">
-              onchain identity for smart contracts · ENS · Sourcify · OLI · EthGuard
-            </p>
-          </div>
-          <p className="font-mono text-xs text-ink-600">
-            try <span className="text-ink-400">vitalik.eth</span> for deployer view, or{' '}
-            <a href="/analyze" className="text-acid-400 hover:underline">analyze a contract</a>
-          </p>
-        </div>
-      )}
 
       {state === 'loading' && (
         <div className="flex flex-col items-center justify-center py-24 space-y-3 animate-fade-in">
           <div className="flex items-center gap-3">
             <div className="flex gap-1">
               {[0, 1, 2].map((i) => (
-                <div key={i} className="w-2 h-2 bg-acid-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 150}ms` }} />
+                <div
+                  key={i}
+                  className="w-1.5 h-1.5 bg-hm-green rounded-full animate-bounce"
+                  style={{ animationDelay: `${i * 150}ms` }}
+                />
               ))}
             </div>
-            <span className="font-mono text-sm text-ink-500">fetching resume…</span>
+            <span className="text-[10px] font-light tracking-[0.22em] uppercase text-white/40">
+              Fetching resume…
+            </span>
           </div>
-          <p className="font-mono text-xs text-ink-600">
+          <p className="text-[9px] font-light tracking-[0.22em] uppercase text-white/[0.18]">
             BigQuery (verified) + Blockscout ({chainCount} chain{chainCount !== 1 ? 's' : ''})
           </p>
         </div>
       )}
 
       {state === 'error' && (
-        <div className="flex flex-col items-center justify-center py-24 animate-fade-in">
-          <div className="bg-rose-400/10 border border-rose-400/30 rounded-lg p-6 text-center max-w-md">
-            <p className="font-mono text-rose-400 text-sm mb-1">lookup failed</p>
-            <p className="font-mono text-xs text-rose-400/70">{error}</p>
-            <button onClick={() => setState('idle')} className="mt-4 font-mono text-xs text-ink-400 hover:text-ink-100 transition-colors">
-              ← try again
+        <div className="flex flex-col items-center justify-center py-20 animate-fade-in">
+          <div className="bg-[rgba(255,69,58,0.07)] border border-[rgba(255,69,58,0.25)] rounded-[10px] p-6 text-center max-w-md">
+            <p className="text-[10px] font-light tracking-[0.22em] uppercase text-hm-red mb-2">Lookup failed</p>
+            <p className="font-mono text-xs text-hm-red/70">{error}</p>
+            <button
+              onClick={() => setState('idle')}
+              className="mt-4 text-[10px] font-light tracking-[0.22em] uppercase text-white/40 hover:text-white transition-colors"
+            >
+              ← Try again
             </button>
           </div>
         </div>
@@ -151,6 +229,15 @@ export default function Dashboard() {
           />
         </>
       )}
-    </>
+    </section>
+  );
+}
+
+function StatCell({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="flex-1 px-7 py-5 flex flex-col items-center gap-1.5 border-r border-white/[0.07] last:border-r-0">
+      <div className="font-display font-extralight text-xl tracking-[0.04em] text-white">{value}</div>
+      <div className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22]">{label}</div>
+    </div>
   );
 }

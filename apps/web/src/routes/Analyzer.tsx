@@ -52,19 +52,45 @@ export default function Analyzer() {
   }
 
   return (
-    <div className="space-y-4">
-      <div className="space-y-1">
-        <h2 className="text-xl text-ink-100">Analyzer</h2>
-        <p className="text-xs text-ink-500">
-          Score any contract via Sourcify + Claude + EthGuard, name it under ENS, attest to OLI on Base.
+    <section className="px-6 md:px-12 pt-16 pb-16 max-w-[1100px] mx-auto">
+      {/* Hero */}
+      <div className="flex flex-col items-center text-center mb-12">
+        <div className="flex items-center gap-2 mb-6 animate-fade-up">
+          <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
+          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
+            Contract Identity Layer
+          </div>
+        </div>
+        <h1
+          className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
+          style={{ fontSize: 'clamp(32px, 5vw, 60px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
+        >
+          Every contract<br />
+          <em className="not-italic text-white/[0.28]">deserves</em> an identity
+        </h1>
+        <p
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[560px] animate-fade-up"
+          style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
+        >
+          Paste any contract address. Hallmark verifies it against Sourcify, scores it with Claude + EthGuard,
+          attests to OLI on Base, and mints it a permanent ENS identity — in seconds.
         </p>
         {agent?.ensName && (
-          <div className="text-xs text-ink-500">
-            agent:{' '}
-            <a href={agent.ensProfileUrl ?? '#'} target="_blank" rel="noreferrer" className="text-acid-400 hover:underline">
+          <div
+            className="mt-6 text-[10px] font-light tracking-[0.22em] uppercase text-white/40 animate-fade-up"
+            style={{ animationDelay: '0.3s', animationFillMode: 'both', opacity: 0 }}
+          >
+            Agent:{' '}
+            <a
+              href={agent.ensProfileUrl ?? '#'}
+              target="_blank"
+              rel="noreferrer"
+              className="text-hm-green hover:underline"
+            >
               {agent.ensName}
             </a>
-            {' · '}model: {agent.model}
+            <span className="text-white/20"> · </span>
+            Model: {agent.model}
           </div>
         )}
       </div>
@@ -79,8 +105,9 @@ export default function Analyzer() {
       {loading && <AnalysisProgress completedSteps={steps} />}
 
       {error && (
-        <div className="mt-8 p-4 border border-rose-400/40 bg-rose-400/10 rounded text-rose-300 text-sm font-mono">
-          {error}
+        <div className="mt-8 p-5 hm-card border-[rgba(255,69,58,0.25)]" style={{ background: 'rgba(255,69,58,0.05)' }}>
+          <div className="text-[10px] font-light tracking-[0.22em] uppercase text-hm-red mb-1.5">Error</div>
+          <div className="font-mono text-xs text-hm-red/80">{error}</div>
         </div>
       )}
 
@@ -88,13 +115,14 @@ export default function Analyzer() {
         <CachedCard
           data={cached}
           onReanalyze={() => {
-            if (params.address) void onSubmit({ address: params.address, chainId: Number(params.chainId ?? 11155111), force: true });
+            if (params.address)
+              void onSubmit({ address: params.address, chainId: Number(params.chainId ?? 11155111), force: true });
           }}
         />
       )}
 
       {result && <IdentityCard result={result} />}
-    </div>
+    </section>
   );
 }
 
@@ -108,70 +136,86 @@ function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () =
   const classifiedAt = r['classified-at'];
 
   return (
-    <div className="mt-6 border border-acid-500/30 bg-acid-500/5 rounded-lg p-5 space-y-4 animate-fade-in font-mono">
+    <div
+      className="mt-8 hm-card p-6 space-y-5 animate-fade-up"
+      style={{ borderColor: 'rgba(48,209,88,0.20)' }}
+    >
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <span className="w-2 h-2 rounded-full bg-acid-500" />
-          <span className="text-xs text-acid-400">cached · hallmarked.eth</span>
+          <span className="hm-eyebrow-dot" />
+          <span className="text-[10px] font-light tracking-[0.22em] uppercase text-hm-green">
+            Cached · hallmarked.eth
+          </span>
         </div>
         <button
           onClick={onReanalyze}
-          className="text-xs text-ink-500 hover:text-ink-200 transition-colors border border-ink-700 px-2.5 py-1 rounded"
+          className="text-[10px] tracking-[0.22em] uppercase text-white/40 hover:text-white border border-white/[0.07] hover:border-white/30 px-3 py-1.5 rounded-full transition-colors"
         >
-          re-analyze →
+          Re-analyze →
         </button>
       </div>
 
-      <div className="flex items-baseline gap-3">
+      <div className="flex items-baseline gap-3 flex-wrap">
         <a
           href={`https://app.ens.domains/${data.ensName}`}
           target="_blank"
           rel="noreferrer"
-          className="text-lg text-acid-300 hover:underline"
+          className="font-mono text-lg text-hm-green hover:underline tracking-[0.02em]"
         >
           {data.ensName}
         </a>
         {classifiedAt && (
-          <span className="text-xs text-ink-600">
+          <span className="font-mono text-[10px] text-white/30">
             {new Date(classifiedAt).toLocaleDateString()}
           </span>
         )}
       </div>
 
-      <div className="grid grid-cols-2 gap-3 text-xs">
-        {score && (
-          <div className="bg-ink-800 rounded p-3">
-            <div className="text-ink-500 mb-1">trust score</div>
-            <div className="text-ink-100">{score}</div>
-          </div>
-        )}
-        {pattern && (
-          <div className="bg-ink-800 rounded p-3">
-            <div className="text-ink-500 mb-1">pattern</div>
-            <div className="text-ink-100">{pattern}</div>
-          </div>
-        )}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 border border-white/[0.07] rounded-lg overflow-hidden">
+        {score && <CachedField label="Trust Score" value={score} accent="green" />}
+        {pattern && <CachedField label="Pattern" value={pattern} />}
         {verified && (
-          <div className="bg-ink-800 rounded p-3">
-            <div className="text-ink-500 mb-1">sourcify</div>
-            <div className={verified === 'true' ? 'text-acid-400' : verified === 'partial' ? 'text-yellow-400' : 'text-rose-400'}>
-              {verified}
-            </div>
-          </div>
+          <CachedField
+            label="Sourcify"
+            value={verified}
+            accent={verified === 'true' ? 'green' : verified === 'partial' ? 'amber' : 'red'}
+          />
         )}
-        {flags && flags !== 'none' && (
-          <div className="bg-ink-800 rounded p-3">
-            <div className="text-ink-500 mb-1">risk flags</div>
-            <div className="text-rose-300">{flags}</div>
-          </div>
-        )}
+        {flags && flags !== 'none' && <CachedField label="Risk Flags" value={flags} accent="amber" />}
       </div>
 
       {description && (
-        <p className="text-xs text-ink-400 leading-relaxed border-t border-ink-700 pt-3">
+        <p className="text-xs text-white/55 leading-relaxed border-t border-white/[0.07] pt-4">
           {description}
         </p>
       )}
+    </div>
+  );
+}
+
+function CachedField({
+  label,
+  value,
+  accent,
+}: {
+  label: string;
+  value: string;
+  accent?: 'green' | 'red' | 'amber' | 'blue';
+}) {
+  const color =
+    accent === 'green'
+      ? 'text-hm-green'
+      : accent === 'red'
+      ? 'text-hm-red'
+      : accent === 'amber'
+      ? 'text-hm-amber'
+      : accent === 'blue'
+      ? 'text-hm-blue'
+      : 'text-white/80';
+  return (
+    <div className="p-3 border-r border-b border-white/[0.07] last:border-r-0">
+      <div className="text-[8px] font-light tracking-[0.22em] uppercase text-white/[0.18] mb-1">{label}</div>
+      <div className={`font-mono text-xs ${color}`}>{value}</div>
     </div>
   );
 }
