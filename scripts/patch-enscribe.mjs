@@ -8,6 +8,11 @@ const target = resolve(__dirname, '../apps/web/node_modules/@enscribe/enscribe/d
 const original = `import { randomUUID } from "crypto";`;
 const patched = `const randomUUID = () => globalThis.crypto.randomUUID();`;
 
+import { existsSync } from 'fs';
+if (!existsSync(target)) {
+  console.log('patch-enscribe: target not found, skipping');
+  process.exit(0);
+}
 const content = readFileSync(target, 'utf8');
 if (content.includes(original)) {
   writeFileSync(target, content.replace(original, patched));

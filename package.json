@@ -14,5 +14,8 @@
   "packageManager": "pnpm@9.0.0",
   "engines": {
     "node": ">=20"
+  },
+  "dependencies": {
+    "vercel": "^53.3.1"
   }
 }

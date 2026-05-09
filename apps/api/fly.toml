@@ -1,0 +1,29 @@
+# fly.toml — run `fly launch` first to create the app, then `fly deploy`
+app = "hallmark-api"
+primary_region = "ams"
+
+[build]
+  dockerfile = "Dockerfile"
+  # fly.io builds from the repo root — set build context in fly deploy with --dockerfile
+  # Actually fly reads this file from apps/api/ but we need root context.
+  # Use: fly deploy --dockerfile apps/api/Dockerfile from the repo root.
+
+[env]
+  PORT = "8080"
+  NODE_ENV = "production"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 0
+
+  [http_service.concurrency]
+    type = "requests"
+    hard_limit = 50
+    soft_limit = 25
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "512mb"
