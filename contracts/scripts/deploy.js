@@ -1,8 +1,10 @@
-import hre from "hardhat";
+import pkg from "hardhat";
+const { ethers, network } = pkg;
 
 async function main() {
-  const [deployer] = await hre.ethers.getSigners();
+  const [deployer] = await ethers.getSigners();
   console.log("Deploying from:", deployer.address);
+  console.log("Network:", network.name);
 
   const contracts = [
     { name: "SafeVault", args: [] },
@@ -14,16 +16,17 @@ async function main() {
   const deployed = {};
 
   for (const { name, args } of contracts) {
-    const Factory = await hre.ethers.getContractFactory(name);
+    const Factory = await ethers.getContractFactory(name);
     const contract = await Factory.deploy(...args);
     await contract.waitForDeployment();
     const addr = await contract.getAddress();
     const tx = contract.deploymentTransaction();
     deployed[name] = { address: addr, txHash: tx?.hash ?? "0x" };
-    console.log(`${name}: ${addr} (tx: ${tx?.hash})`);
+    console.log(`${name}: ${addr}  tx: ${tx?.hash}`);
   }
 
-  console.log("\nDeployed contracts:", JSON.stringify(deployed, null, 2));
+  console.log("\n--- Deployed ---");
+  console.log(JSON.stringify(deployed, null, 2));
 }
 
 main().catch((err) => {

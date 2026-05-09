@@ -300,7 +300,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, developerAd
         {/* Actions — compact, no wrapping */}
         <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1 justify-end">
-            {onOpenAnalyzer && !developerAddress && (
+            {onOpenAnalyzer && (
               <ActionBtn
                 onClick={onOpenAnalyzer}
                 title={hasCache ? 'Re-analyze' : 'Analyze & score'}
