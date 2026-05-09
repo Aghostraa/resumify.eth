@@ -1,9 +1,4 @@
-import {
-  createPublicClient,
-  http,
-  type Address,
-  type PublicClient,
-} from 'viem';
+import { createPublicClient, http, type Address } from 'viem';
 import { mainnet, sepolia, base, baseSepolia, optimism, arbitrum, linea } from 'viem/chains';
 import { ALL_TEXT_RECORD_KEYS, type Report } from '@contractid/core';
 import { getNetwork } from '@contractid/config';
@@ -21,10 +16,11 @@ const VIEM_CHAINS = {
 
 export interface GetReportOptions {
   rpcUrl?: string;
-  client?: PublicClient;
+  client?: { getEnsName: (args: { address: Address }) => Promise<string | null>;
+             getEnsText: (args: { name: string; key: string }) => Promise<string | null> };
 }
 
-function clientFor(chainId: number, opts?: GetReportOptions): PublicClient {
+function clientFor(chainId: number, opts?: GetReportOptions) {
   if (opts?.client) return opts.client;
   const chain = VIEM_CHAINS[chainId as keyof typeof VIEM_CHAINS];
   if (!chain) throw new Error(`No viem chain for chainId ${chainId}`);
