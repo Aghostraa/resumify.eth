@@ -1,4 +1,5 @@
-import { Routes, Route, NavLink } from 'react-router-dom';
+import { Routes, Route, NavLink, useLocation } from 'react-router-dom';
+import Home from './routes/Home';
 import Dashboard from './routes/Dashboard';
 import Analyzer from './routes/Analyzer';
 import Agent from './routes/Agent';
@@ -25,12 +26,15 @@ function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
 
 function AppInner() {
   const wallet = useWalletContext();
+  const location = useLocation();
+  const isHome = location.pathname === '/';
+
   return (
     <>
-      <OctagonBackground />
+      {!isHome && <OctagonBackground />}
 
       <div className="relative z-10 min-h-screen flex flex-col">
-        <header className="flex items-center justify-between px-12 py-6 border-b border-white/[0.07] animate-fade-down">
+        <header className="flex items-center justify-between px-12 py-6 border-b border-white/[0.07] sticky top-0 z-20 backdrop-blur-md bg-black/40 animate-fade-down">
           <NavLink to="/" className="flex items-center gap-3.5 shrink-0">
             <NavMark size={36} />
             <span className="font-display font-extralight text-lg tracking-[0.22em] uppercase text-white">
@@ -38,11 +42,13 @@ function AppInner() {
             </span>
           </NavLink>
 
-          <nav className="hidden md:flex items-center gap-8">
-            <NavTab to="/">Deployer</NavTab>
-            <NavTab to="/analyze">Analyzer</NavTab>
-            <NavTab to="/agent">Agent</NavTab>
-          </nav>
+          {!isHome && (
+            <nav className="hidden md:flex items-center gap-8">
+              <NavTab to="/deployer">Deployer</NavTab>
+              <NavTab to="/analyze">Analyzer</NavTab>
+              <NavTab to="/agent">Agent</NavTab>
+            </nav>
+          )}
 
           <div className="flex items-center gap-3">
             <a className="hm-cta hidden sm:inline-flex" href="/extension">
@@ -69,9 +75,10 @@ function AppInner() {
           </div>
         </header>
 
-        <main className="flex-1">
+        <main className="flex-1 flex flex-col">
           <Routes>
-            <Route path="/" element={<Dashboard />} />
+            <Route path="/" element={<Home />} />
+            <Route path="/deployer" element={<Dashboard />} />
             <Route path="/analyze" element={<Analyzer />} />
             <Route path="/c/:chainId/:address" element={<Analyzer />} />
             <Route path="/agent" element={<Agent />} />
