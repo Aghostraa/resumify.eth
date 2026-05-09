@@ -80,8 +80,16 @@ export default function VerifyModal({ contract, onClose, onVerified }: Props) {
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="bg-black hm-card w-full max-w-2xl max-h-[90vh] overflow-y-auto shadow-2xl animate-fade-up">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 animate-fade-in" style={{ background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(8px)' }}>
+      <div
+        className="w-full max-w-2xl max-h-[90vh] overflow-y-auto animate-fade-up"
+        style={{
+          background: '#0a0a0a',
+          border: '1px solid rgba(255,255,255,0.10)',
+          borderRadius: '12px',
+          boxShadow: '0 0 0 1px rgba(0,0,0,0.8), 0 32px 64px rgba(0,0,0,0.8)',
+        }}
+      >
         <div className="flex items-center justify-between p-5 border-b border-white/[0.07]">
           <div>
             <h3 className="font-display font-extralight text-lg text-white tracking-[0.04em]">Verify Contract</h3>

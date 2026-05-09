@@ -62,10 +62,10 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
         href={`https://app.ens.domains/${ensName}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-hm-green/40 text-hm-green hover:border-hm-green/70 transition-colors"
         title={ensName}
+        className="w-7 h-7 flex items-center justify-center rounded-md border border-hm-green/40 text-hm-green hover:border-hm-green/60 transition-colors"
       >
-        ✓ {ensName.split('.')[0]}
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12" /></svg>
       </a>
     );
   }
@@ -74,10 +74,10 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
     return (
       <button
         onClick={() => setState('idle')}
-        className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-hm-red/40 text-hm-red hover:border-hm-red/70 transition-colors"
-        title={error ?? 'failed'}
+        title={error ?? 'failed — click to retry'}
+        className="w-7 h-7 flex items-center justify-center rounded-md border border-hm-red/40 text-hm-red hover:border-hm-red/60 transition-colors"
       >
-        ✗ Retry
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
       </button>
     );
   }
@@ -86,10 +86,22 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
     <button
       onClick={handleEnscribe}
       disabled={state === 'busy'}
-      className="text-[10px] tracking-[0.22em] uppercase px-3 py-1 rounded-full border border-white/[0.07] text-white/40 hover:border-white/30 hover:text-white disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
-      title="Name this contract on ENS via Enscribe"
+      title="Name this contract on ENS"
+      className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.07] text-white/30 hover:border-white/25 hover:text-white/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
     >
-      {state === 'busy' ? '…' : 'Enscribe →'}
+      {state === 'busy'
+        ? <span className="text-[9px]">…</span>
+        : <EnsIcon />
+      }
     </button>
+  );
+}
+
+function EnsIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M8 12h8M12 8v8" />
+    </svg>
   );
 }

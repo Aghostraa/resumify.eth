@@ -81,7 +81,6 @@ function clientsForChain(network: NetworkConfig) {
 
 function buildSubname(address: string, contractName: string | undefined, pattern: string | undefined, parent: string): { label: string; full: string } {
   const shortHash = address.slice(2, 8).toLowerCase();
-  // Prefer Sourcify contractName over AI-classified pattern
   const rawName = contractName ?? pattern ?? 'unknown';
   const slug = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'unknown';
   const label = `${shortHash}-${slug}`;

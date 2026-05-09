@@ -8,7 +8,19 @@ import { DEFAULT_DEMO_CHAIN_ID } from '@contractid/config';
 export const analyzerRouter: ExpressRouter = Router();
 
 const PUBLIC_RESOLVER_SEPOLIA = '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD';
-const AGENT_RECORD_KEYS = ['name', 'description', 'agent-context', 'agent-endpoint[web]'];
+// ENSIP-18 profile records + ENSIP-26 agent records
+const AGENT_RECORD_KEYS = [
+  // ENSIP-18 profile
+  'name',
+  'description',
+  'url',
+  'avatar',
+  // ENSIP-26 agent identity
+  'agent-context',
+  'agent-endpoint[web]',
+  'agent-endpoint[mcp]',
+  'agent-endpoint[a2a]',
+];
 const RESOLVER_TEXT_ABI = [
   {
     name: 'text',
