@@ -2,16 +2,19 @@ import { useState } from 'react';
 import type { DeployedContract } from '../types';
 import { chainName, truncateAddress, formatDate } from '../utils/chains';
 import VerifyModal from './VerifyModal';
+import EnscribeButton from './EnscribeButton';
+import type { WalletState } from '../hooks/useWallet';
 
 interface Props {
   deployments: DeployedContract[];
   onContractVerified: (address: string, chainId: number) => void;
   onOpenAnalyzer?: (address: string, chainId: number) => void;
+  wallet?: WalletState;
 }
 
 type SortKey = 'deployedAt' | 'chainId' | 'verified';
 
-export default function ContractsTable({ deployments, onContractVerified, onOpenAnalyzer }: Props) {
+export default function ContractsTable({ deployments, onContractVerified, onOpenAnalyzer, wallet }: Props) {
   const [verifyTarget, setVerifyTarget] = useState<DeployedContract | null>(null);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('deployedAt');
@@ -83,6 +86,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
                   index={i}
                   onVerify={() => setVerifyTarget(d)}
                   onOpenAnalyzer={onOpenAnalyzer ? () => onOpenAnalyzer(d.address, d.chainId) : undefined}
+                  wallet={wallet}
                 />
               ))}
               {pageItems.length === 0 && (
@@ -150,11 +154,12 @@ function Th({ label, sortKey, current, onSort }: { label: string; sortKey: SortK
   );
 }
 
-function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer }: {
+function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
   contract: DeployedContract;
   index: number;
   onVerify: () => void;
   onOpenAnalyzer?: () => void;
+  wallet?: WalletState;
 }) {
   const name = d.contractName ?? d.blockscoutName;
 
@@ -215,7 +220,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer }: {
         )}
       </td>
       <td className="px-4 py-2.5">
-        <div className="flex gap-1.5">
+        <div className="flex gap-1.5 flex-wrap">
           {onOpenAnalyzer && (
             <button
               onClick={onOpenAnalyzer}
@@ -224,6 +229,14 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer }: {
             >
               score →
             </button>
+          )}
+          {d.verified && wallet && (
+            <EnscribeButton
+              contractAddress={d.address}
+              chainId={d.chainId}
+              contractName={d.contractName ?? d.blockscoutName}
+              wallet={wallet}
+            />
           )}
           {!d.verified && !d.isScam && (
             <button

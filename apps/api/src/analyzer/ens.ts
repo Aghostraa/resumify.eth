@@ -126,6 +126,8 @@ export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
 
   const records = buildTextRecords(inputs, network);
   const setTextHashes: string[] = [];
+  // Get nonce once and increment manually — avoids RPC returning stale pending nonce
+  let nonce = await publicClient.getTransactionCount({ address: account.address, blockTag: 'pending' });
   for (const [key, value] of Object.entries(records)) {
     if (!value) continue;
     const tx = await walletClient.writeContract({
@@ -133,6 +135,7 @@ export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
       abi: RESOLVER_TEXT_ABI,
       functionName: 'setText',
       args: [subnameNode, key, value],
+      nonce: nonce++,
     });
     await publicClient.waitForTransactionReceipt({ hash: tx, timeout: 120_000 });
     setTextHashes.push(tx);

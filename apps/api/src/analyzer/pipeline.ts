@@ -8,7 +8,9 @@ import { calculateScore, type PatternEntry, type ScoreResult } from './scorer.js
 import { mintEnsIdentity, type MintResult } from './ens.js';
 import { analyzeSource, ETHGUARD_VERSION } from './ethguard.js';
 import { getLabels, getSimilarContracts, attestScore } from './oli.js';
+import { setCachedAnalysis } from './ens-cache.js';
 import type { OliLabel, SecurityFinding } from '@contractid/core';
+import { TEXT_RECORD_KEYS } from '@contractid/core';
 import { isSupportedChain } from '@contractid/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -80,7 +82,7 @@ function pickSources(sourcify: SourcifyResult): Record<string, string> {
   return out;
 }
 
-export async function runPipeline(input: PipelineInput): Promise<PipelineResult> {
+export async function runPipeline(input: PipelineInput, onStep?: (step: PipelineStep) => void): Promise<PipelineResult> {
   const { address, chainId, sourceCode } = input;
   if (!isSupportedChain(chainId)) throw new Error(`Unsupported chainId: ${chainId}`);
 
@@ -90,17 +92,19 @@ export async function runPipeline(input: PipelineInput): Promise<PipelineResult>
   console.log('  [1/9] Sourcify fetch…');
   const sourcify = (await fetchSourcify({ chainId, address })) as SourcifyResult;
   const patterns = loadPatternLibrary();
-  steps.push({ step: 'fetch', ok: true, detail: `status=${sourcify.status} verified=${!!sourcify.verified}` });
+  const emit = (step: PipelineStep) => { steps.push(step); onStep?.(step); };
+
+  emit({ step: 'fetch', ok: true, detail: `status=${sourcify.status} verified=${!!sourcify.verified}` });
 
   // [2] OLI READ
   console.log('  [2/9] OLI labels…');
   const oli = await getLabels(address, chainId);
-  steps.push({ step: 'oli-read', ok: true, detail: oli?.ownerProject ? `owner=${oli.ownerProject}` : 'no labels' });
+  emit({ step: 'oli-read', ok: true, detail: oli?.ownerProject ? `owner=${oli.ownerProject}` : 'no labels' });
 
   // [3] CLASSIFY
   console.log('  [3/9] classify…');
   const classification = await classifyWithClaude({ sourcify, sourceCode, patterns });
-  steps.push({ step: 'classify', ok: true, detail: `pattern=${classification.pattern} conf=${classification.confidence}` });
+  emit({ step: 'classify', ok: true, detail: `pattern=${classification.pattern} conf=${classification.confidence}` });
 
   // [4] SECURITY
   console.log('  [4/9] security checks…');
@@ -109,7 +113,7 @@ export async function runPipeline(input: PipelineInput): Promise<PipelineResult>
     : pickSources(sourcify);
   const security = analyzeSource({ sources });
   const failed = security.filter((s) => !s.passed).length;
-  steps.push({ step: 'security', ok: true, detail: `${failed}/${security.length} failed` });
+  emit({ step: 'security', ok: true, detail: `${failed}/${security.length} failed` });
 
   // [5] SCORE
   console.log('  [5/9] score…');
@@ -120,34 +124,51 @@ export async function runPipeline(input: PipelineInput): Promise<PipelineResult>
     security,
     oliOwnerProject: oli?.ownerProject ?? null,
   });
-  steps.push({ step: 'score', ok: true, detail: score.label });
+  emit({ step: 'score', ok: true, detail: score.label });
 
   // [6] EXPLAIN
   console.log('  [6/9] explain…');
   const explanation = await explainWithClaude({ classification, score, sourcify, security });
-  steps.push({ step: 'explain', ok: true });
+  emit({ step: 'explain', ok: true });
 
-  // [7] NAME (subname + forward + reverse via Enscribe)
+  // [7] NAME — only when Sourcify verified (we have real data to name)
   console.log('  [7/9] ENS naming…');
   let ens: MintResult | null = null;
-  let similarTo: string[] = [];
-  if (oli?.ownerProject) {
-    similarTo = await getSimilarContracts(oli.ownerProject, address, 5);
-  }
-  try {
-    ens = await mintEnsIdentity({
-      address,
-      chainId,
-      classification,
-      score: { label: score.label, total: score.total },
-      sourcify,
-      security,
-      oli: { ownerProject: oli?.ownerProject, similarTo },
-      description: explanation,
-    });
-    steps.push({ step: 'name+metadata', ok: true, detail: `${ens.name} type=${ens.contractType}` });
-  } catch (err) {
-    steps.push({ step: 'name+metadata', ok: false, error: err instanceof Error ? err.message : String(err) });
+  if (!sourcify.verified && !sourcify.partial) {
+    emit({ step: 'name+metadata', ok: false, error: 'skipped — contract not verified on Sourcify' });
+  } else {
+    let similarTo: string[] = [];
+    if (oli?.ownerProject) {
+      similarTo = await getSimilarContracts(oli.ownerProject, address, 5);
+    }
+    try {
+      ens = await mintEnsIdentity({
+        address,
+        chainId,
+        classification,
+        score: { label: score.label, total: score.total },
+        sourcify,
+        security,
+        oli: { ownerProject: oli?.ownerProject, similarTo },
+        description: explanation,
+      });
+      emit({ step: 'name+metadata', ok: true, detail: `${ens.name} type=${ens.contractType} reverse=${ens.reverseSet}` });
+
+      // Populate session cache so cached lookup works immediately (before reverse resolves)
+      setCachedAnalysis(address, {
+        ensName: ens.name,
+        records: {
+          [TEXT_RECORD_KEYS.trustScore]: score.label,
+          [TEXT_RECORD_KEYS.pattern]: classification.pattern,
+          [TEXT_RECORD_KEYS.sourcifyVerified]: sourcify.verified ? 'true' : 'partial',
+          [TEXT_RECORD_KEYS.riskFlags]: classification.riskFlags.map((f) => f.id).join(',') || 'none',
+          [TEXT_RECORD_KEYS.classifiedAt]: new Date().toISOString(),
+          [TEXT_RECORD_KEYS.description]: explanation,
+        },
+      });
+    } catch (err) {
+      emit({ step: 'name+metadata', ok: false, error: err instanceof Error ? err.message : String(err) });
+    }
   }
 
   // [9] ATTEST
@@ -163,13 +184,13 @@ export async function runPipeline(input: PipelineInput): Promise<PipelineResult>
       sourcifyVerified: sourcify.verified ? 'true' : sourcify.partial ? 'partial' : 'false',
       scoreVersion: ETHGUARD_VERSION,
     });
-    steps.push({
+    emit({
       step: 'attest',
       ok: attestation.ok,
       detail: attestation.uid ?? attestation.reason,
     });
   } else {
-    steps.push({ step: 'attest', ok: false, error: 'skipped (no ENS mint)' });
+    emit({ step: 'attest', ok: false, error: 'skipped (no ENS mint)' });
   }
 
   return {

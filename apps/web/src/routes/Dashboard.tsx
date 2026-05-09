@@ -7,6 +7,7 @@ import StatsRow from '../components/StatsRow';
 import ContractsTable from '../components/ContractsTable';
 import ChainPicker from '../components/ChainPicker';
 import { fetchResume } from '../api/client';
+import { useWallet } from '../hooks/useWallet';
 
 const DEFAULT_BLOCKSCOUT_CHAINS = [1, 10, 56, 100, 137, 324, 8453, 42161, 42220, 43114];
 
@@ -14,6 +15,7 @@ type AppState = 'idle' | 'loading' | 'loaded' | 'error';
 
 export default function Dashboard() {
   const navigate = useNavigate();
+  const wallet = useWallet();
   const [state, setState] = useState<AppState>('idle');
   const [resume, setResume] = useState<DeveloperResume | null>(null);
   const [error, setError] = useState<string>('');
@@ -71,6 +73,27 @@ export default function Dashboard() {
           <SearchBar onSearch={search} loading={state === 'loading'} />
         </div>
         <ChainPicker selected={selectedChains} onChange={handleChainsChange} />
+        {wallet.address ? (
+          <div className="flex items-center gap-2 shrink-0">
+            <span className="font-mono text-xs text-acid-400 hidden sm:block">
+              {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
+            </span>
+            <button
+              onClick={wallet.disconnect}
+              className="font-mono text-xs px-2.5 py-1.5 rounded border border-ink-600 text-ink-500 hover:text-ink-300 transition-colors"
+            >
+              disconnect
+            </button>
+          </div>
+        ) : (
+          <button
+            onClick={() => void wallet.connect()}
+            disabled={wallet.connecting}
+            className="font-mono text-xs px-3 py-1.5 rounded border border-acid-500/50 text-acid-400 hover:border-acid-400 disabled:opacity-40 transition-colors shrink-0"
+          >
+            {wallet.connecting ? 'connecting…' : 'connect wallet'}
+          </button>
+        )}
       </div>
 
       {state === 'idle' && (
@@ -124,6 +147,7 @@ export default function Dashboard() {
             deployments={resume.deployments}
             onContractVerified={handleContractVerified}
             onOpenAnalyzer={openAnalyzer}
+            wallet={wallet}
           />
         </>
       )}

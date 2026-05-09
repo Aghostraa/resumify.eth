@@ -10,7 +10,7 @@ import {
 
 export const deployerRouter: ExpressRouter = Router();
 
-deployerRouter.get('/resume/:nameOrAddress', async (req, res) => {
+deployerRouter.get('/api/resume/:nameOrAddress', async (req, res) => {
   try {
     const includeTestnets = req.query.testnets === 'true';
     const chainsParam = req.query.chains as string | undefined;
@@ -24,7 +24,7 @@ deployerRouter.get('/resume/:nameOrAddress', async (req, res) => {
   }
 });
 
-deployerRouter.get('/resume/:nameOrAddress/stats', async (req, res) => {
+deployerRouter.get('/api/resume/:nameOrAddress/stats', async (req, res) => {
   try {
     const resume = await buildDeveloperResume(req.params.nameOrAddress);
     res.json({ address: resume.address, ensName: resume.ensName, stats: resume.stats });

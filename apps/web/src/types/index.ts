@@ -43,6 +43,13 @@ export interface DeveloperResume {
 
 export type VerifyStatus = 'idle' | 'submitting' | 'polling' | 'done' | 'error';
 
+export interface PipelineStep {
+  step: string;
+  ok: boolean;
+  detail?: string;
+  error?: string;
+}
+
 // Analyzer types — match apps/api analyzer pipeline response
 export interface RiskFlag {
   id: string;

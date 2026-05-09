@@ -2,6 +2,7 @@ import { Router, type Router as ExpressRouter } from 'express';
 import { createPublicClient, http, namehash } from 'viem';
 import { sepolia } from 'viem/chains';
 import { runPipeline } from './pipeline.js';
+import { getCachedAnalysis } from './ens-cache.js';
 import { DEFAULT_DEMO_CHAIN_ID } from '@contractid/config';
 
 export const analyzerRouter: ExpressRouter = Router();
@@ -71,6 +72,49 @@ analyzerRouter.get('/api/agent', async (_req, res) => {
     recordsError,
     resolver: PUBLIC_RESOLVER_SEPOLIA,
   });
+});
+
+analyzerRouter.get('/api/cached/:address', async (req, res) => {
+  const cached = await getCachedAnalysis(req.params.address).catch(() => null);
+  if (!cached) { res.json({ cached: false }); return; }
+  res.json({ cached: true, ensName: cached.ensName, records: cached.records });
+});
+
+analyzerRouter.get('/api/analyze/stream', async (req, res) => {
+  const { address, chainId, sourceCode, force } = req.query as Record<string, string | undefined>;
+  if (!address && !sourceCode) {
+    res.status(400).json({ error: 'Provide address or sourceCode' });
+    return;
+  }
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.flushHeaders();
+
+  const send = (event: string, data: unknown) => {
+    res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
+  };
+
+  // Return cached result unless force=true
+  if (address && force !== 'true') {
+    const cached = await getCachedAnalysis(address).catch(() => null);
+    if (cached) {
+      send('cached', cached);
+      res.end();
+      return;
+    }
+  }
+
+  try {
+    const result = await runPipeline(
+      { address: address!, chainId: chainId ? Number(chainId) : DEFAULT_DEMO_CHAIN_ID, sourceCode },
+      (step) => send('step', step),
+    );
+    send('result', result);
+  } catch (err) {
+    send('error', { error: err instanceof Error ? err.message : 'pipeline failed' });
+  }
+  res.end();
 });
 
 analyzerRouter.post('/api/analyze', async (req, res) => {

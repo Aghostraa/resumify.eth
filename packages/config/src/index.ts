@@ -27,7 +27,7 @@ export const NETWORKS: Record<number, NetworkConfig> = {
     name: 'sepolia',
     enscribeChainName: 'sepolia',
     sourcifyChainId: 11155111,
-    ensParent: 'contractid.eth',
+    ensParent: 'hallmarked.eth',
     rpcUrlEnvKey: 'RPC_URL_SEPOLIA',
     explorerUrl: 'https://sepolia.etherscan.io',
     isTestnet: true,
