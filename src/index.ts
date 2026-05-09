@@ -3,21 +3,29 @@ import { fetchDeploymentsAllChains } from './sources/blockscout.js';
 import { fetchSourceifyVerified } from './sources/sourcify-bq.js';
 import { fetchOLILabel } from './sources/oli.js';
 import type { DeveloperResume, DeployedContract, ResumeOptions } from './types.js';
-import { DEFAULT_CHAINS } from './types.js';
 
 export type { DeveloperResume, DeployedContract, ResumeOptions };
+
+// Default chains scanned by Blockscout for unverified contract discovery.
+// BigQuery always covers all chains for verified contracts regardless of this list.
+export const DEFAULT_BLOCKSCOUT_CHAINS = [11155111];
 
 export async function buildDeveloperResume(
   addressOrENS: string,
   options: ResumeOptions = {}
 ): Promise<DeveloperResume> {
-  const chains = options.chains ?? DEFAULT_CHAINS;
+  // chains controls Blockscout scan scope only (unverified discovery)
+  // BigQuery always runs across all chains for verified contracts
+  const blockscoutChains = options.chains ?? [
+    ...DEFAULT_BLOCKSCOUT_CHAINS,
+    ...(options.includeTestnets ? [11155111, 17000, 84532, 11155420, 421614] : []),
+  ];
 
   const { address, ensName } = await resolveENS(addressOrENS);
 
   const [profileResult, blockscoutResult, sourcifyResult, oliResult] = await Promise.allSettled([
     ensName ? fetchENSProfile(ensName) : Promise.resolve(null),
-    fetchDeploymentsAllChains(address, chains),
+    fetchDeploymentsAllChains(address, blockscoutChains),
     fetchSourceifyVerified(address),
     fetchOLILabel(address),
   ]);
@@ -27,43 +35,42 @@ export async function buildDeveloperResume(
   const sourcifyRecords = sourcifyResult.status === 'fulfilled' ? sourcifyResult.value : [];
   const oliLabel = oliResult.status === 'fulfilled' ? oliResult.value : null;
 
-  // Index Sourcify records by lowercase address for fast merge
+  // Index Sourcify records by chain:address for fast merge
   const sourcifyMap = new Map(
     sourcifyRecords.map((r) => [`${r.chainId}:${r.contractAddress.toLowerCase()}`, r])
   );
 
-  // Merge: Blockscout is source of truth, Sourcify overlays verification metadata
-  const deployments: DeployedContract[] = blockscoutDeployments.map((d) => {
-    const key = `${d.chainId}:${d.address.toLowerCase()}`;
-    const sv = sourcifyMap.get(key);
-    return {
-      ...d,
-      verified: sv ? true : d.verified,
-      contractName: sv?.contractName ?? d.contractName,
-      compiler: sv?.compiler ?? null,
-      compilerVersion: sv?.compilerVersion ?? null,
-      deployedAt: d.deployedAt ?? sv?.verifiedAt ?? null,
-    };
-  });
+  // Start with BigQuery verified records as base (cross-chain, comprehensive)
+  const deployments: DeployedContract[] = sourcifyRecords.map((sv) => ({
+    address: sv.contractAddress,
+    chainId: sv.chainId,
+    txHash: sv.txHash,
+    blockNumber: sv.blockNumber,
+    deployedAt: sv.verifiedAt,
+    contractName: sv.contractName,
+    compiler: sv.compiler,
+    compilerVersion: sv.compilerVersion,
+    verified: true,
+    isScam: false,
+    blockscoutName: null,
+  }));
 
-  // Also add any Sourcify-verified contracts not caught by Blockscout
-  const blockscoutKeys = new Set(deployments.map((d) => `${d.chainId}:${d.address.toLowerCase()}`));
-  for (const sv of sourcifyRecords) {
-    const key = `${sv.chainId}:${sv.contractAddress.toLowerCase()}`;
-    if (!blockscoutKeys.has(key)) {
-      deployments.push({
-        address: sv.contractAddress,
-        chainId: sv.chainId,
-        txHash: sv.txHash,
-        blockNumber: sv.blockNumber,
-        deployedAt: sv.verifiedAt,
-        contractName: sv.contractName,
-        compiler: sv.compiler,
-        compilerVersion: sv.compilerVersion,
-        verified: true,
-        isScam: false,
-        blockscoutName: null,
-      });
+  // Overlay Blockscout metadata onto matching verified records (richer tx data)
+  const deploymentMap = new Map(deployments.map((d) => [`${d.chainId}:${d.address.toLowerCase()}`, d]));
+  for (const bd of blockscoutDeployments) {
+    const key = `${bd.chainId}:${bd.address.toLowerCase()}`;
+    const existing = deploymentMap.get(key);
+    if (existing) {
+      // Enrich verified record with Blockscout tx data
+      existing.txHash = existing.txHash ?? bd.txHash;
+      existing.blockNumber = existing.blockNumber ?? bd.blockNumber;
+      existing.deployedAt = existing.deployedAt ?? bd.deployedAt;
+      existing.blockscoutName = bd.blockscoutName;
+      existing.isScam = bd.isScam;
+    } else if (!sourcifyMap.has(key)) {
+      // Unverified contract not in BigQuery — add from Blockscout
+      deployments.push(bd);
+      deploymentMap.set(key, bd);
     }
   }
 

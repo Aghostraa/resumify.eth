@@ -1,7 +1,11 @@
 import type { DeployedContract } from '../types.js';
 
-const BASE_URL = 'https://api.blockscout.com';
-const API_KEY = process.env.BLOCKSCOUT_API_KEY ?? '';
+const CHAIN_URLS: Record<number, string> = {
+  11155111: 'https://eth-sepolia.blockscout.com',
+};
+const CONCURRENCY = 4;
+const BATCH_DELAY_MS = 300;
+const MAX_RETRIES = 2;
 
 interface BlockscoutTx {
   hash: string;
@@ -20,15 +24,25 @@ interface BlockscoutPage {
   next_page_params: { block_number: number; index: number; items_count: number } | null;
 }
 
+const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+
 async function fetchPage(chainId: number, address: string, params: Record<string, string> = {}): Promise<BlockscoutPage> {
-  const url = new URL(`${BASE_URL}/${chainId}/api/v2/addresses/${address}/transactions`);
-  url.searchParams.set('apikey', API_KEY);
-  url.searchParams.set('filter', 'to | created_contract');
+  const base = CHAIN_URLS[chainId];
+  if (!base) throw new Error(`Blockscout: no URL for chain ${chainId}`);
+  const url = new URL(`${base}/api/v2/addresses/${address}/transactions`);
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
-  const res = await fetch(url.toString());
-  if (!res.ok) throw new Error(`Blockscout ${chainId}: ${res.status}`);
-  return res.json() as Promise<BlockscoutPage>;
+  for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
+    const res = await fetch(url.toString());
+    if (res.status === 429) {
+      // Rate limited — back off and retry
+      await sleep(1000 * (attempt + 1));
+      continue;
+    }
+    if (!res.ok) throw new Error(`Blockscout ${chainId}: ${res.status}`);
+    return res.json() as Promise<BlockscoutPage>;
+  }
+  throw new Error(`Blockscout ${chainId}: rate limited after ${MAX_RETRIES} retries`);
 }
 
 export async function fetchDeployments(address: string, chainId: number): Promise<DeployedContract[]> {
@@ -72,6 +86,14 @@ export async function fetchDeployments(address: string, chainId: number): Promis
 }
 
 export async function fetchDeploymentsAllChains(address: string, chainIds: number[]): Promise<DeployedContract[]> {
-  const results = await Promise.allSettled(chainIds.map((id) => fetchDeployments(address, id)));
-  return results.flatMap((r) => (r.status === 'fulfilled' ? r.value : []));
+  const all: DeployedContract[] = [];
+
+  for (let i = 0; i < chainIds.length; i += CONCURRENCY) {
+    const batch = chainIds.slice(i, i + CONCURRENCY);
+    const results = await Promise.allSettled(batch.map((id) => fetchDeployments(address, id)));
+    all.push(...results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])));
+    if (i + CONCURRENCY < chainIds.length) await sleep(BATCH_DELAY_MS);
+  }
+
+  return all;
 }

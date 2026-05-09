@@ -11,7 +11,7 @@ export interface SourceifyRecord {
   verifiedAt: string | null;
 }
 
-const bq = new BigQuery();
+const bq = new BigQuery({ projectId: 'resumify-495714' });
 
 export async function fetchSourceifyVerified(address: string): Promise<SourceifyRecord[]> {
   const addressNoPrefix = address.toLowerCase().replace('0x', '');
@@ -26,9 +26,9 @@ export async function fetchSourceifyVerified(address: string): Promise<Sourceify
       cc.compiler,
       cc.version                                  AS compiler_version,
       CAST(vc.created_at AS STRING)               AS verified_at
-    FROM \`sourcify.public_contract_deployments\` cd
-    JOIN \`sourcify.public_verified_contracts\`   vc ON vc.deployment_id = cd.id
-    JOIN \`sourcify.public_compiled_contracts\`   cc ON cc.id = vc.compilation_id
+    FROM \`sourcify-project.sourcify.public_contract_deployments\` cd
+    JOIN \`sourcify-project.sourcify.public_verified_contracts\`   vc ON vc.deployment_id = cd.id
+    JOIN \`sourcify-project.sourcify.public_compiled_contracts\`   cc ON cc.id = vc.compilation_id
     WHERE cd.deployer = FROM_HEX(@address)
     ORDER BY cd.block_number DESC
   `;
@@ -36,7 +36,7 @@ export async function fetchSourceifyVerified(address: string): Promise<Sourceify
   const [rows] = await bq.query({
     query,
     params: { address: addressNoPrefix },
-    location: 'europe-west1',
+    location: 'US',
   });
 
   return rows.map((r: Record<string, unknown>) => ({
