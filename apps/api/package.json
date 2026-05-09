@@ -5,11 +5,10 @@
   "type": "module",
   "main": "dist/server.js",
   "scripts": {
-    "dev": "tsx watch src/deployer/server.ts",
+    "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/deployer/server.js",
-    "typecheck": "tsc --noEmit",
-    "dev:legacy-analyzer": "node --watch src/legacy-server.js"
+    "start": "node dist/server.js",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.30.1",
