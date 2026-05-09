@@ -287,7 +287,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, developerAd
             <span className="font-mono text-[9px] text-white/20 animate-pulse">resolving…</span>
           ) : cache ? (
             <a
-              href={`https://app.ens.domains/${cache.ensName}`}
+              href={`https://sepolia.app.ens.domains/${cache.ensName}`}
               target="_blank"
               rel="noreferrer"
               onClick={(e) => e.stopPropagation()}
@@ -392,7 +392,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="hm-eyebrow-dot shrink-0" />
           <a
-            href={`https://app.ens.domains/${cache.ensName}`}
+            href={`https://sepolia.app.ens.domains/${cache.ensName}`}
             target="_blank"
             rel="noreferrer"
             className="font-mono text-sm text-hm-green hover:underline truncate"
@@ -407,7 +407,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
           )}
           {issuedBy && (
             <a
-              href={`https://app.ens.domains/${issuedBy}`}
+              href={`https://sepolia.app.ens.domains/${issuedBy}`}
               target="_blank"
               rel="noreferrer"
               className="font-mono text-[9px] text-white/30 hover:text-hm-blue transition-colors shrink-0"

@@ -78,7 +78,7 @@ analyzerRouter.get('/api/agent', async (_req, res) => {
   res.json({
     ensName,
     namespace,
-    ensProfileUrl: ensName ? `https://app.ens.domains/${ensName}` : null,
+    ensProfileUrl: ensName ? `https://sepolia.app.ens.domains/${ensName}` : null,
     ensipCompliance: ['ENSIP-26'],
     model: process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-6',
     records,
@@ -111,7 +111,7 @@ analyzerRouter.get('/api/developer/:address', async (req, res) => {
     label,
     profileName: `${label}.${namespace}`,
     resumeName: `resume.${label}.${namespace}`,
-    ensProfileUrl: `https://app.ens.domains/${label}.${namespace}`,
+    ensProfileUrl: `https://sepolia.app.ens.domains/${label}.${namespace}`,
   });
 });
 

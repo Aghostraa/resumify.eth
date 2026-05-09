@@ -83,7 +83,7 @@ export default function EnscribeButton({ contractAddress, chainId, developerAddr
   if (state === 'done' && ensName) {
     return (
       <a
-        href={`https://app.ens.domains/${ensName}`}
+        href={`https://sepolia.app.ens.domains/${ensName}`}
         target="_blank"
         rel="noopener noreferrer"
         title={ensName}

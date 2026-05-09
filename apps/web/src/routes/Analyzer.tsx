@@ -162,7 +162,7 @@ function CachedCard({ data, onReanalyze, developerAddress }: { data: CachedData;
 
       <div className="flex items-baseline gap-3 flex-wrap">
         <a
-          href={`https://app.ens.domains/${data.ensName}`}
+          href={`https://sepolia.app.ens.domains/${data.ensName}`}
           target="_blank"
           rel="noreferrer"
           className="font-mono text-lg text-hm-green hover:underline tracking-[0.02em]"

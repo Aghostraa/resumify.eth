@@ -163,7 +163,7 @@ export default function ContractInput({
           <div className="w-1.5 h-1.5 rounded-full bg-hm-green shrink-0" />
           <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
             <a
-              href={`https://app.ens.domains/${hint.ensName}`}
+              href={`https://sepolia.app.ens.domains/${hint.ensName}`}
               target="_blank"
               rel="noreferrer"
               className="font-mono text-xs text-hm-green hover:underline truncate"

@@ -73,7 +73,7 @@ export default function IdentityCard({ result }: Props) {
         {ens?.name && (
           <div className="px-7 py-4 border-t border-white/[0.18] flex items-center justify-between gap-3 flex-wrap">
             <a
-              href={`https://app.ens.domains/${ens.name}`}
+              href={`https://sepolia.app.ens.domains/${ens.name}`}
               target="_blank"
               rel="noreferrer"
               className="font-mono text-sm text-white/55 hover:text-hm-green transition-colors"
