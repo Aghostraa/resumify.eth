@@ -75,7 +75,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
               className={`text-[10px] font-light tracking-[0.22em] uppercase px-3 py-1.5 rounded-full border transition-colors ${
                 filter === f
                   ? 'border-white/30 text-white bg-white/[0.04]'
-                  : 'border-white/[0.07] text-white/40 hover:border-white/20 hover:text-white/80'
+                  : 'border-white/[0.18] text-white/40 hover:border-white/20 hover:text-white/80'
               }`}
             >
               {f}
@@ -95,7 +95,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
             <col className="w-[10%]" />   {/* Actions */}
           </colgroup>
           <thead>
-            <tr className="border-b border-white/[0.07]">
+            <tr className="border-b border-white/[0.18]">
               <th className="text-left px-4 py-3 text-[9px] tracking-[0.26em] uppercase text-white/[0.22] font-normal">
                 Contract
               </th>
@@ -130,7 +130,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
         </table>
 
         {pageCount > 1 && (
-          <div className="border-t border-white/[0.07] px-4 py-3 flex items-center justify-between">
+          <div className="border-t border-white/[0.18] px-4 py-3 flex items-center justify-between">
             <span className="font-mono text-[10px] text-white/40">
               {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, filtered.length)} of {filtered.length}
             </span>
@@ -202,7 +202,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
   return (
     <>
       <tr
-        className={`border-b border-white/[0.04] last:border-0 transition-colors ${hasCache ? 'cursor-pointer' : ''} ${expanded ? 'bg-white/[0.025]' : hasCache ? 'hover:bg-white/[0.02]' : ''}`}
+        className={`border-b border-white/[0.12] last:border-0 transition-colors ${hasCache ? 'cursor-pointer' : ''} ${expanded ? 'bg-white/[0.025]' : hasCache ? 'hover:bg-white/[0.02]' : ''}`}
         style={{ animationDelay: `${index * 20}ms` }}
         onClick={() => { if (hasCache) setExpanded((v) => !v); }}
       >
@@ -251,7 +251,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
 
         {/* Chain */}
         <td className="px-4 py-3">
-          <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/50 whitespace-nowrap">
+          <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.18] text-white/50 whitespace-nowrap">
             {chainName(d.chainId)}
           </span>
         </td>
@@ -327,7 +327,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
 
       {/* Expanded analysis panel */}
       {expanded && hasCache && (
-        <tr className="border-b border-white/[0.04]">
+        <tr className="border-b border-white/[0.12]">
           <td colSpan={6} className="px-4 pb-4 pt-0">
             <ExpandedAnalysis cache={cache} address={d.address} chainId={d.chainId} />
           </td>
@@ -350,7 +350,7 @@ function ActionBtn({ onClick, title, children, active }: {
       className={`w-7 h-7 flex items-center justify-center rounded-md border transition-colors ${
         active
           ? 'border-hm-green/30 text-hm-green/70 hover:border-hm-green/60 hover:text-hm-green'
-          : 'border-white/[0.07] text-white/30 hover:border-white/25 hover:text-white/70'
+          : 'border-white/[0.18] text-white/30 hover:border-white/25 hover:text-white/70'
       }`}
     >
       {children}
@@ -380,7 +380,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
   const flagList = flags && flags !== 'none' ? flags.split(',').filter(Boolean) : [];
 
   return (
-    <div className="mt-2 rounded-xl border border-white/[0.07] bg-white/[0.015] overflow-hidden">
+    <div className="mt-2 rounded-xl border border-white/[0.18] bg-white/[0.015] overflow-hidden">
       {/* Header row */}
       <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
@@ -403,7 +403,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
         <div className="flex items-center gap-2 shrink-0">
           {hasScore && (
             <div
-              className="font-display font-extralight text-xl leading-none tabular-nums border border-white/[0.07] rounded-lg px-3 py-1.5"
+              className="font-display font-extralight text-xl leading-none tabular-nums border border-white/[0.18] rounded-lg px-3 py-1.5"
               style={{ color: scoreColor }}
             >
               {scoreNum}<span className="text-[9px] text-white/20 ml-0.5">/100</span>
@@ -413,7 +413,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
             href={`https://sourcify.dev/#/lookup/${address}`}
             target="_blank"
             rel="noreferrer"
-            className="text-[9px] tracking-[0.16em] uppercase border border-white/[0.07] rounded-md px-2.5 py-1.5 text-white/35 hover:border-white/25 hover:text-white/70 transition-colors"
+            className="text-[9px] tracking-[0.16em] uppercase border border-white/[0.18] rounded-md px-2.5 py-1.5 text-white/35 hover:border-white/25 hover:text-white/70 transition-colors"
           >
             Source ↗
           </a>

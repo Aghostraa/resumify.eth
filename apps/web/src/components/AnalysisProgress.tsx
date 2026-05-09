@@ -39,7 +39,7 @@ export default function AnalysisProgress({ completedSteps }: Props) {
             ? 'linear-gradient(to right, #30d158, rgba(48,209,88,0.2))'
             : isActive
             ? 'linear-gradient(to right, rgba(41,151,255,0.5), transparent)'
-            : 'rgba(255,255,255,0.07)';
+            : 'rgba(255,255,255,0.18)';
 
           return (
             <div key={s.id} className="flex flex-col items-center gap-2.5 flex-1 relative min-w-[64px]">
@@ -57,7 +57,7 @@ export default function AnalysisProgress({ completedSteps }: Props) {
                     ? 'border-hm-red text-hm-red'
                     : isActive
                     ? 'border-hm-blue text-hm-blue'
-                    : 'border-white/[0.07] text-white/[0.18]'
+                    : 'border-white/[0.18] text-white/[0.18]'
                 }`}
                 style={
                   isDone
@@ -117,7 +117,7 @@ export default function AnalysisProgress({ completedSteps }: Props) {
       )}
 
       {/* Detailed list */}
-      <div className="w-full max-w-[680px] border-t border-white/[0.07] pt-6 space-y-2">
+      <div className="w-full max-w-[680px] border-t border-white/[0.18] pt-6 space-y-2">
         {STEP_META.map((s, i) => {
           const result = done.get(s.id);
           const isRunning = i === currentIdx;

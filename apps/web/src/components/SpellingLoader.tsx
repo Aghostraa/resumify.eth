@@ -61,7 +61,8 @@ export default function SpellingLoader({ size = 200 }: Props) {
     let raf = 0;
 
     function draw(ts: number) {
-      ctx!.clearRect(0, 0, SIZE, SIZE);
+      ctx!.fillStyle = '#000';
+      ctx!.fillRect(0, 0, SIZE, SIZE);
 
       const cycleT = (ts % CYCLE) / CYCLE;
       const edgeIdx = Math.floor(cycleT * SIDES);
@@ -90,8 +91,8 @@ export default function SpellingLoader({ size = 200 }: Props) {
       ctx!.beginPath();
       outerPts.forEach((p, i) => (i === 0 ? ctx!.moveTo(p.x, p.y) : ctx!.lineTo(p.x, p.y)));
       ctx!.closePath();
-      ctx!.strokeStyle = 'rgba(255,255,255,0.09)';
-      ctx!.lineWidth = 0.8;
+      ctx!.strokeStyle = 'rgba(255,255,255,0.55)';
+      ctx!.lineWidth = 0.9;
       ctx!.stroke();
 
       // Corner dots with arrival/departure glow
@@ -99,10 +100,10 @@ export default function SpellingLoader({ size = 200 }: Props) {
         const isArrival = edgeIdx === i && edgeT < 0.18;
         const isDeparture = edgeIdx === (i - 1 + SIDES) % SIDES && edgeT > 0.82;
         const dotBright = isArrival
-          ? 0.25 + 0.75 * easeOut(1 - edgeT / 0.18)
+          ? 0.7 + 0.3 * easeOut(1 - edgeT / 0.18)
           : isDeparture
-          ? 0.25 + 0.75 * easeOut((edgeT - 0.82) / 0.18)
-          : 0.22;
+          ? 0.7 + 0.3 * easeOut((edgeT - 0.82) / 0.18)
+          : 0.7;
 
         if (dotBright > 0.3) {
           const g = ctx!.createRadialGradient(p.x, p.y, 0, p.x, p.y, 10);
@@ -162,10 +163,10 @@ export default function SpellingLoader({ size = 200 }: Props) {
         else ctx!.lineTo(CX + r * Math.cos(angle), CY + r * Math.sin(angle));
       }
       ctx!.closePath();
-      ctx!.fillStyle = 'rgba(0,0,0,0.9)';
+      ctx!.fillStyle = '#000';
       ctx!.fill();
-      ctx!.strokeStyle = 'rgba(255,255,255,0.4)';
-      ctx!.lineWidth = 0.7;
+      ctx!.strokeStyle = 'rgba(255,255,255,0.95)';
+      ctx!.lineWidth = 0.9;
       ctx!.stroke();
 
       // Snap pulse
@@ -184,8 +185,8 @@ export default function SpellingLoader({ size = 200 }: Props) {
       ctx!.arc(CX, CY, R_CENTER, 0, Math.PI * 2);
       ctx!.fillStyle = '#000';
       ctx!.fill();
-      ctx!.strokeStyle = 'rgba(255,255,255,0.05)';
-      ctx!.lineWidth = 0.5;
+      ctx!.strokeStyle = 'rgba(255,255,255,0.20)';
+      ctx!.lineWidth = 0.6;
       ctx!.stroke();
 
       // Letters
@@ -221,5 +222,5 @@ export default function SpellingLoader({ size = 200 }: Props) {
     return () => cancelAnimationFrame(raf);
   }, [size]);
 
-  return <canvas ref={canvasRef} width={size} height={size} className="block" aria-hidden />;
+  return <canvas ref={canvasRef} width={size} height={size} className="block bg-black" aria-hidden />;
 }

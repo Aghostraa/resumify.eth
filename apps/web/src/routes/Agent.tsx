@@ -50,7 +50,7 @@ export default function Agent() {
       <div className="flex flex-col items-center text-center mb-10">
         <div className="flex items-center gap-2 mb-6 animate-fade-up">
           <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
-          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
+          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/55">
             Agent Identity · ENSIP-26
           </div>
         </div>
@@ -61,11 +61,12 @@ export default function Agent() {
           The agent <em className="not-italic text-white/[0.28]">behind</em> every score
         </h1>
         <p
-          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] animate-fade-up"
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/55 max-w-[560px] animate-fade-up"
           style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
         >
-          The analyzer agent has its own ENS name and ENSIP-26 records. This is who scored every
-          contract on this site.
+          Hallmark's analyzer is itself an onchain identity. Its ENSIP-26 records expose the model,
+          prompts, and pipeline behind every score — making each analysis auditable, reproducible,
+          and verifiably attributable to a named agent.
         </p>
       </div>
 
@@ -92,7 +93,7 @@ export default function Agent() {
           </div>
         </div>
 
-        <div className="mt-5 grid grid-cols-2 md:grid-cols-3 border border-white/[0.07] rounded-lg overflow-hidden">
+        <div className="mt-5 grid grid-cols-2 md:grid-cols-3 border border-white/[0.18] rounded-lg overflow-hidden">
           <Meta label="Model" value={agent.model} />
           <Meta label="Resolver" value={agent.resolver ? `${agent.resolver.slice(0, 6)}…${agent.resolver.slice(-4)}` : '—'} />
           <Meta label="ENSIP" value={agent.ensipCompliance?.join(', ') || 'ENSIP-26'} />
@@ -106,7 +107,7 @@ export default function Agent() {
 
 function Meta({ label, value }: { label: string; value: string }) {
   return (
-    <div className="px-4 py-3 border-r border-b border-white/[0.07] last:border-r-0">
+    <div className="px-4 py-3 border-r border-b border-white/[0.18] last:border-r-0">
       <div className="text-[8px] font-light tracking-[0.22em] uppercase text-white/[0.18] mb-1">{label}</div>
       <div className="font-mono text-[11px] text-white/70">{value}</div>
     </div>

@@ -43,7 +43,7 @@ export default function AgentProfile({ agent }: Props) {
       </button>
 
       {expanded && (
-        <div className="border-t border-white/[0.07] p-6 space-y-3">
+        <div className="border-t border-white/[0.18] p-6 space-y-3">
           {Object.entries(records).map(([key, value]) => (
             <div key={key} className="flex gap-4 text-[11px]">
               <span className="font-mono text-white/40 w-44 shrink-0">{key}</span>
@@ -59,7 +59,7 @@ export default function AgentProfile({ agent }: Props) {
             </div>
           ))}
 
-          <div className="pt-4 border-t border-white/[0.07] flex gap-4 text-[10px] font-light tracking-[0.22em] uppercase text-white/30">
+          <div className="pt-4 border-t border-white/[0.18] flex gap-4 text-[10px] font-light tracking-[0.22em] uppercase text-white/30">
             {agent.ensProfileUrl && (
               <a
                 href={agent.ensProfileUrl}

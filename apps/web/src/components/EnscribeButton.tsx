@@ -87,7 +87,7 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
       onClick={handleEnscribe}
       disabled={state === 'busy'}
       title="Name this contract on ENS"
-      className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.07] text-white/30 hover:border-white/25 hover:text-white/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+      className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.18] text-white/30 hover:border-white/25 hover:text-white/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
     >
       {state === 'busy'
         ? <span className="text-[9px]">…</span>

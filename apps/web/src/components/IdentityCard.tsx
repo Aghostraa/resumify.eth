@@ -26,7 +26,7 @@ export default function IdentityCard({ result }: Props) {
     <div className="mt-10 space-y-5 animate-fade-up">
       {/* Top identity card */}
       <div className="hm-card overflow-hidden">
-        <div className="px-7 py-7 border-b border-white/[0.07] flex items-start justify-between gap-5 flex-wrap">
+        <div className="px-7 py-7 border-b border-white/[0.18] flex items-start justify-between gap-5 flex-wrap">
           <div className="flex flex-col gap-2 min-w-0">
             <div className="inline-flex items-center gap-2 self-start bg-[rgba(41,151,255,0.07)] border border-[rgba(41,151,255,0.18)] rounded-md px-3 py-1.5">
               <div className="w-1.5 h-1.5 rounded-full bg-hm-blue" />
@@ -41,7 +41,7 @@ export default function IdentityCard({ result }: Props) {
             </div>
           </div>
 
-          <div className="flex flex-col items-center gap-1 border border-white/[0.07] rounded-xl px-6 py-4 shrink-0">
+          <div className="flex flex-col items-center gap-1 border border-white/[0.18] rounded-xl px-6 py-4 shrink-0">
             <div className="font-display font-extralight text-3xl leading-none" style={{ color: scoreColor }}>
               {total}
             </div>
@@ -71,7 +71,7 @@ export default function IdentityCard({ result }: Props) {
         </div>
 
         {ens?.name && (
-          <div className="px-7 py-4 border-t border-white/[0.07] flex items-center justify-between gap-3 flex-wrap">
+          <div className="px-7 py-4 border-t border-white/[0.18] flex items-center justify-between gap-3 flex-wrap">
             <a
               href={`https://app.ens.domains/${ens.name}`}
               target="_blank"
@@ -83,7 +83,7 @@ export default function IdentityCard({ result }: Props) {
             <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => navigator.clipboard.writeText(ens.name)}
-                className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.07] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
+                className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.18] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
               >
                 Copy ENS
               </button>
@@ -92,7 +92,7 @@ export default function IdentityCard({ result }: Props) {
                   href={ens.explorerUrl}
                   target="_blank"
                   rel="noreferrer"
-                  className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.07] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
+                  className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.18] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
                 >
                   View Tx
                 </a>
@@ -101,7 +101,7 @@ export default function IdentityCard({ result }: Props) {
                 href={`https://sourcify.dev/#/lookup/${address}`}
                 target="_blank"
                 rel="noreferrer"
-                className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.07] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
+                className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.18] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
               >
                 View Source
               </a>
@@ -113,7 +113,7 @@ export default function IdentityCard({ result }: Props) {
 
       {/* Score Widget */}
       <div className="hm-card overflow-hidden">
-        <div className="px-7 py-5 border-b border-white/[0.07] flex items-center justify-between">
+        <div className="px-7 py-5 border-b border-white/[0.18] flex items-center justify-between">
           <div className="text-[10px] font-light tracking-[0.28em] uppercase text-white/40">Trust Score</div>
           <div className="text-[9px] font-light tracking-[0.20em] uppercase text-white/[0.18]">
             Based on Sourcify + EthGuard
@@ -151,7 +151,7 @@ export default function IdentityCard({ result }: Props) {
       {/* Risk + security findings */}
       {((classification?.riskFlags?.length ?? 0) > 0 || (security?.length ?? 0) > 0) && (
         <div className="hm-card overflow-hidden">
-          <div className="px-6 py-4 border-b border-white/[0.07] flex items-center justify-between flex-wrap gap-2">
+          <div className="px-6 py-4 border-b border-white/[0.18] flex items-center justify-between flex-wrap gap-2">
             <div className="flex items-center gap-2.5">
               {high > 0 && (
                 <div className="w-5 h-5 rounded-md flex items-center justify-center text-[10px] bg-[rgba(255,69,58,0.15)] text-hm-red">
@@ -173,7 +173,7 @@ export default function IdentityCard({ result }: Props) {
           </div>
 
           {classification?.riskFlags?.map((flag, i) => (
-            <div key={i} className="px-6 py-5 border-b border-white/[0.07] last:border-b-0 flex gap-4 items-start">
+            <div key={i} className="px-6 py-5 border-b border-white/[0.18] last:border-b-0 flex gap-4 items-start">
               <SeverityChip severity={flag.severity} />
               <div className="flex-1 min-w-0 flex flex-col gap-1.5">
                 <div className="text-sm text-white/85 font-light tracking-[0.02em]">{flag.id}</div>
@@ -185,7 +185,7 @@ export default function IdentityCard({ result }: Props) {
           ))}
 
           {security?.length > 0 && (
-            <div className="px-6 py-5 border-t border-white/[0.07]">
+            <div className="px-6 py-5 border-t border-white/[0.18]">
               <SecurityFindings findings={security} />
             </div>
           )}
@@ -228,7 +228,7 @@ function SeverityChip({ severity }: { severity: 'high' | 'medium' | 'low' }) {
       ? { bg: 'rgba(255,69,58,0.12)', color: '#ff453a', border: 'rgba(255,69,58,0.25)' }
       : severity === 'medium'
       ? { bg: 'rgba(255,214,10,0.08)', color: '#ffd60a', border: 'rgba(255,214,10,0.20)' }
-      : { bg: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)', border: 'rgba(255,255,255,0.07)' };
+      : { bg: 'rgba(255,255,255,0.04)', color: 'rgba(255,255,255,0.55)', border: 'rgba(255,255,255,0.18)' };
   return (
     <div
       className="text-[8px] font-normal tracking-[0.18em] uppercase rounded px-2.5 py-1 mt-0.5 border shrink-0"

@@ -23,7 +23,7 @@ export default function OliLabels({ oli, attestationUrl }: Props) {
         OLI Labels
       </div>
       {hasAny ? (
-        <div className="bg-white/[0.025] border border-white/[0.07] rounded-md p-3 space-y-1.5 font-mono text-[11px]">
+        <div className="bg-black border border-white/10 rounded-md p-3 space-y-1.5 font-mono text-[11px]">
           {fields
             .filter((f) => f.value)
             .map((f) => (

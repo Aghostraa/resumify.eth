@@ -84,7 +84,7 @@ export default function ContractInput({
             value={chainId}
             onChange={(e) => setChainId(Number(e.target.value))}
             disabled={disabled}
-            className="appearance-none bg-white/[0.025] border border-white/[0.07] rounded-full pl-4 pr-9 py-2 text-[10px] font-light tracking-[0.22em] uppercase text-white/80 hover:border-white/20 focus:border-white/30 focus:outline-none transition-colors cursor-pointer"
+            className="appearance-none bg-black border border-white/15 rounded-full pl-4 pr-9 py-2 text-[10px] font-light tracking-[0.22em] uppercase text-white hover:border-white/30 focus:border-white/45 focus:outline-none transition-colors cursor-pointer"
           >
             <optgroup label="Mainnets">
               {ALL_CHAINS.filter((c) => !c.testnet).map((c) => (
@@ -145,7 +145,7 @@ export default function ContractInput({
             className="hm-input font-mono w-full resize-y"
             disabled={disabled}
           />
-          <div className="border-t border-white/[0.07] flex justify-end">
+          <div className="border-t border-white/[0.18] flex justify-end">
             <button
               type="submit"
               disabled={disabled || !sourceCode}
@@ -188,17 +188,17 @@ export default function ContractInput({
       )}
 
       {mode === 'address' && (
-        <div className="text-[9px] font-light tracking-[0.22em] uppercase text-white/[0.14] pl-1">
+        <div className="text-[10px] font-light tracking-[0.22em] uppercase text-white/55 pl-1">
           Try an example —{' '}
           {SAMPLES.map((s, i) => (
             <span key={s.address}>
               <span
                 onClick={() => !disabled && setAddress(s.address)}
-                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
+                className="text-white cursor-pointer hover:text-hm-green transition-colors"
               >
                 {s.label}
               </span>
-              {i < SAMPLES.length - 1 && <span className="text-white/[0.14]"> · </span>}
+              {i < SAMPLES.length - 1 && <span className="text-white/55"> · </span>}
             </span>
           ))}
         </div>
@@ -215,7 +215,7 @@ function ModeButton({ active, onClick, children }: { active: boolean; onClick: (
       className={`px-4 py-2 rounded-full border text-[10px] font-light tracking-[0.22em] uppercase transition-colors ${
         active
           ? 'border-white/30 text-white bg-white/[0.04]'
-          : 'border-white/[0.07] text-white/40 hover:border-white/20 hover:text-white/80'
+          : 'border-white/[0.18] text-white/40 hover:border-white/20 hover:text-white/80'
       }`}
     >
       {children}

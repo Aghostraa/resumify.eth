@@ -90,7 +90,7 @@ export default function VerifyModal({ contract, onClose, onVerified }: Props) {
           boxShadow: '0 0 0 1px rgba(0,0,0,0.8), 0 32px 64px rgba(0,0,0,0.8)',
         }}
       >
-        <div className="flex items-center justify-between p-5 border-b border-white/[0.07]">
+        <div className="flex items-center justify-between p-5 border-b border-white/[0.18]">
           <div>
             <h3 className="font-display font-extralight text-lg text-white tracking-[0.04em]">Verify Contract</h3>
             <p className="font-mono text-xs text-white/40 mt-1">
@@ -117,7 +117,7 @@ export default function VerifyModal({ contract, onClose, onVerified }: Props) {
               onChange={(e) => setMetadataRaw(e.target.value)}
               placeholder='{"compiler":{"version":"0.8.19+commit..."},"language":"Solidity",...}'
               rows={6}
-              className="w-full bg-white/[0.025] border border-white/[0.07] rounded-md p-3 font-mono text-xs text-white/85 placeholder-white/[0.18] focus:outline-none focus:border-white/30 resize-y transition-colors"
+              className="w-full bg-black border border-white/15 rounded-md p-3 font-mono text-xs text-white placeholder-white/30 focus:outline-none focus:border-white/40 resize-y transition-colors"
               disabled={status === 'submitting' || status === 'polling' || status === 'done'}
             />
           </div>
@@ -131,7 +131,7 @@ export default function VerifyModal({ contract, onClose, onVerified }: Props) {
               onChange={(e) => setSourcesRaw(e.target.value)}
               placeholder='{"contracts/MyContract.sol": "// SPDX-License-Identifier: MIT\npragma solidity ^0.8.0;\n..."}'
               rows={6}
-              className="w-full bg-white/[0.025] border border-white/[0.07] rounded-md p-3 font-mono text-xs text-white/85 placeholder-white/[0.18] focus:outline-none focus:border-white/30 resize-y transition-colors"
+              className="w-full bg-black border border-white/15 rounded-md p-3 font-mono text-xs text-white placeholder-white/30 focus:outline-none focus:border-white/40 resize-y transition-colors"
               disabled={status === 'submitting' || status === 'polling' || status === 'done'}
             />
           </div>
@@ -143,7 +143,7 @@ export default function VerifyModal({ contract, onClose, onVerified }: Props) {
                   ? 'bg-[rgba(255,69,58,0.07)] border-[rgba(255,69,58,0.25)] text-hm-red'
                   : status === 'done'
                   ? 'bg-[rgba(48,209,88,0.07)] border-[rgba(48,209,88,0.20)] text-hm-green'
-                  : 'bg-white/[0.025] border-white/[0.07] text-white/55'
+                  : 'bg-black border-white/15 text-white/85'
               }`}
             >
               {status === 'polling' && (

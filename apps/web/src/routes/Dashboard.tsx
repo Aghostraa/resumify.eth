@@ -82,8 +82,8 @@ export default function Dashboard() {
         {/* Eyebrow */}
         <div className="flex items-center gap-2 mb-8 animate-fade-up">
           <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
-          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
-            Live on Ethereum Sepolia
+          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/55">
+            Onchain Developer Resume
           </div>
         </div>
 
@@ -92,17 +92,18 @@ export default function Dashboard() {
           className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
           style={{ fontSize: 'clamp(36px, 6vw, 76px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
         >
-          Your onchain work,<br />
-          <em className="not-italic text-white/[0.28]">scored and identified</em>
+          Every developer<br />
+          <em className="not-italic text-white/[0.28]">deserves</em> a resume
         </h1>
 
         {/* Sub */}
         <p
-          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] mb-12 animate-fade-up"
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/55 max-w-[560px] mb-12 animate-fade-up"
           style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
         >
-          Search any address or ENS name. Hallmark surfaces every contract you've deployed across
-          100+ chains, scores each one with AI security analysis, and mints a permanent ENS identity — in seconds.
+          Search any address or ENS name. Hallmark surfaces every contract that wallet has shipped
+          across 100+ chains — verified or unverified — with deploy dates, Sourcify status, and chain
+          coverage. A verifiable onchain track record, in seconds.
         </p>
 
         {/* Search */}
@@ -112,18 +113,18 @@ export default function Dashboard() {
         >
           <SearchBar onSearch={search} loading={false} />
           <div className="flex items-center justify-between gap-3 px-1">
-            <div className="text-[9px] font-light tracking-[0.22em] uppercase text-white/[0.14]">
+            <div className="text-[10px] font-light tracking-[0.22em] uppercase text-white/55">
               Try —{' '}
               <span
                 onClick={() => void search('vitalik.eth')}
-                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
+                className="text-white cursor-pointer hover:text-hm-green transition-colors"
               >
                 vitalik.eth
               </span>{' '}
               ·{' '}
               <span
                 onClick={() => void search('nick.eth')}
-                className="text-white/30 cursor-pointer hover:text-white/60 transition-colors"
+                className="text-white cursor-pointer hover:text-hm-green transition-colors"
               >
                 nick.eth
               </span>
@@ -134,7 +135,7 @@ export default function Dashboard() {
 
         {/* Stats */}
         <div
-          className="w-full max-w-[820px] flex items-center border border-white/[0.07] rounded-[10px] overflow-hidden animate-fade-up"
+          className="w-full max-w-[820px] flex items-center border border-white/[0.18] rounded-[10px] overflow-hidden animate-fade-up"
           style={{ animationDelay: '0.4s', animationFillMode: 'both', opacity: 0 }}
         >
           <StatCell value="27M+" label="Verified Contracts" />
@@ -210,9 +211,9 @@ export default function Dashboard() {
 
 function StatCell({ value, label }: { value: string; label: string }) {
   return (
-    <div className="flex-1 px-7 py-5 flex flex-col items-center gap-1.5 border-r border-white/[0.07] last:border-r-0">
+    <div className="flex-1 px-7 py-5 flex flex-col items-center gap-1.5 border-r border-white/[0.18] last:border-r-0">
       <div className="font-display font-extralight text-xl tracking-[0.04em] text-white">{value}</div>
-      <div className="text-[9px] font-light tracking-[0.26em] uppercase text-white/[0.22]">{label}</div>
+      <div className="text-[10px] font-light tracking-[0.26em] uppercase text-white/85">{label}</div>
     </div>
   );
 }

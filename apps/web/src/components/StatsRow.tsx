@@ -42,13 +42,13 @@ export default function StatsRow({ stats }: Props) {
           {topChains.map((id) => (
             <span
               key={id}
-              className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/55"
+              className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.18] text-white/55"
             >
               {chainName(id)}
             </span>
           ))}
           {overflow > 0 && (
-            <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.07] text-white/40">
+            <span className="font-mono text-[10px] px-2 py-0.5 rounded-md bg-white/[0.03] border border-white/[0.18] text-white/40">
               +{overflow}
             </span>
           )}

@@ -11,14 +11,14 @@ const PANEL_STYLE: React.CSSProperties = {
   position: 'fixed',
   zIndex: 9999,
   width: 320,
-  background: '#0a0a0a',
+  background: '#000000',
   border: '1px solid rgba(255,255,255,0.12)',
   borderRadius: 12,
   boxShadow: '0 0 0 1px #000, 0 20px 60px rgba(0,0,0,0.9)',
   overflow: 'hidden',
 };
 
-const DIVIDER: React.CSSProperties = { borderBottom: '1px solid rgba(255,255,255,0.07)' };
+const DIVIDER: React.CSSProperties = { borderBottom: '1px solid rgba(255,255,255,0.18)' };
 
 export default function ChainPicker({ selected, onChange }: Props) {
   const [open, setOpen] = useState(false);
@@ -107,10 +107,10 @@ export default function ChainPicker({ selected, onChange }: Props) {
             placeholder="Search chains…"
             style={{
               width: '100%', boxSizing: 'border-box',
-              background: 'rgba(255,255,255,0.04)',
-              border: '1px solid rgba(255,255,255,0.08)',
+              background: '#000000',
+              border: '1px solid rgba(255,255,255,0.18)',
               borderRadius: 6, paddingLeft: 30, paddingRight: 28, paddingTop: 7, paddingBottom: 7,
-              fontSize: 12, color: 'rgba(255,255,255,0.85)',
+              fontSize: 12, color: '#ffffff',
               outline: 'none', fontFamily: 'inherit',
             }}
           />
@@ -143,7 +143,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
       )}
 
       {/* Info */}
-      <div style={{ padding: '10px 14px', background: 'rgba(255,255,255,0.025)', ...DIVIDER }}>
+      <div style={{ padding: '10px 14px', background: '#000000', ...DIVIDER }}>
         <p style={{ fontSize: 10, color: 'rgba(255,255,255,0.35)', lineHeight: 1.6, margin: 0 }}>
           Verified contracts from Sourcify (all chains). These chains are scanned for{' '}
           <span style={{ color: 'rgba(255,255,255,0.55)' }}>unverified</span> contracts only.
@@ -205,7 +205,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
       </div>
 
       {/* Apply */}
-      <div style={{ padding: '10px', borderTop: '1px solid rgba(255,255,255,0.07)' }}>
+      <div style={{ padding: '10px', borderTop: '1px solid rgba(255,255,255,0.18)' }}>
         <button
           onClick={close}
           style={{
@@ -227,10 +227,10 @@ export default function ChainPicker({ selected, onChange }: Props) {
       <button
         ref={triggerRef}
         onClick={openPanel}
-        className={`flex items-center gap-2 px-4 py-2 rounded-full border text-[10px] font-light tracking-[0.22em] uppercase whitespace-nowrap transition-colors ${
+        className={`flex items-center gap-2 px-4 py-2 rounded-full border bg-black text-[10px] font-light tracking-[0.22em] uppercase whitespace-nowrap transition-colors ${
           open
-            ? 'border-white/30 text-white bg-white/[0.06]'
-            : 'border-white/[0.07] text-white/40 hover:border-white/30 hover:text-white'
+            ? 'border-white/40 text-white'
+            : 'border-white/[0.20] text-white/70 hover:border-white/40 hover:text-white'
         }`}
       >
         <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">

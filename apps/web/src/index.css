@@ -30,10 +30,10 @@
     font-family: 'Outfit', system-ui, sans-serif;
   }
 
-  /* Hallmark surfaces */
-  .hm-border    { border-color: rgba(255,255,255,0.07); }
-  .hm-surface   { background: rgba(255,255,255,0.03); }
-  .hm-surface-2 { background: rgba(255,255,255,0.025); }
+  /* Hallmark surfaces — solid black panels with brighter borders so they read against the octagon background */
+  .hm-border    { border-color: rgba(255,255,255,0.20); }
+  .hm-surface   { background: #000000; }
+  .hm-surface-2 { background: #000000; }
   .hm-divider   {
     background: linear-gradient(to right, transparent, rgba(255,255,255,0.07) 25%, rgba(255,255,255,0.07) 75%, transparent);
   }
@@ -51,17 +51,17 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    border: 1px solid rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.45);
     border-radius: 100px;
     padding: 7px 18px;
-    font-size: 9px;
-    font-weight: 300;
+    font-size: 10px;
+    font-weight: 400;
     letter-spacing: 0.22em;
     text-transform: uppercase;
-    color: rgba(255,255,255,0.28);
+    color: rgba(255,255,255,0.85);
     transition: border-color 0.25s, color 0.25s, background 0.25s;
   }
-  .hm-pill:hover { border-color: rgba(255,255,255,0.28); color: rgba(255,255,255,0.85); }
+  .hm-pill:hover { border-color: rgba(255,255,255,0.65); color: #fff; }
 
   .hm-cta {
     display: inline-flex;
@@ -90,9 +90,9 @@
   }
 
   .hm-card {
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.20);
     border-radius: 10px;
-    background: rgba(255,255,255,0.03);
+    background: #000000;
   }
 
   .hm-input {
@@ -105,22 +105,22 @@
     font-size: 13px;
     font-weight: 300;
     letter-spacing: 0.04em;
-    color: rgba(255,255,255,0.85);
+    color: rgba(255,255,255,0.92);
     min-width: 0;
   }
-  .hm-input::placeholder { color: rgba(255,255,255,0.18); }
+  .hm-input::placeholder { color: rgba(255,255,255,0.85); }
 
   .hm-input-row {
     display: flex;
-    border: 1px solid rgba(255,255,255,0.07);
+    border: 1px solid rgba(255,255,255,0.22);
     border-radius: 10px;
     overflow: hidden;
-    background: rgba(255,255,255,0.025);
+    background: #000000;
     transition: border-color 0.25s, background 0.25s;
   }
   .hm-input-row:focus-within {
-    border-color: rgba(255,255,255,0.18);
-    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.45);
+    background: #000000;
   }
 
   .hm-input-btn {

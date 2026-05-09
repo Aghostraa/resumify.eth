@@ -57,23 +57,24 @@ export default function Analyzer() {
       <div className="flex flex-col items-center text-center mb-12">
         <div className="flex items-center gap-2 mb-8 animate-fade-up">
           <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
-          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
-            Live on Ethereum Sepolia
+          <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/55">
+            Contract Identity Layer
           </div>
         </div>
         <h1
           className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
           style={{ fontSize: 'clamp(36px, 6vw, 76px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
         >
-          Your onchain work,<br />
-          <em className="not-italic text-white/[0.28]">scored and identified</em>
+          Every contract<br />
+          <em className="not-italic text-white/[0.28]">deserves</em> an identity
         </h1>
         <p
-          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] animate-fade-up"
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/55 max-w-[560px] animate-fade-up"
           style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
         >
-          Paste any contract address. Hallmark verifies it against Sourcify, scores it with Claude + EthGuard,
-          attests to OLI on Base, and mints it a permanent ENS identity — in seconds.
+          Paste any contract address. Hallmark verifies it against Sourcify, classifies it with Claude,
+          runs EthGuard security heuristics, attests the result to OLI on Base, and mints a permanent
+          ENS identity — all in a single pass.
         </p>
         {agent?.ensName && (
           <div
@@ -149,7 +150,7 @@ function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () =
         </div>
         <button
           onClick={onReanalyze}
-          className="text-[10px] tracking-[0.22em] uppercase text-white/40 hover:text-white border border-white/[0.07] hover:border-white/30 px-3 py-1.5 rounded-full transition-colors"
+          className="text-[10px] tracking-[0.22em] uppercase text-white/40 hover:text-white border border-white/[0.18] hover:border-white/30 px-3 py-1.5 rounded-full transition-colors"
         >
           Re-analyze →
         </button>
@@ -171,7 +172,7 @@ function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () =
         )}
       </div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 border border-white/[0.07] rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-2 border border-white/[0.18] rounded-lg overflow-hidden">
         {score && <CachedField label="Trust Score" value={score} accent="green" />}
         {pattern && <CachedField label="Pattern" value={pattern} />}
         {verified && (
@@ -185,7 +186,7 @@ function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () =
       </div>
 
       {description && (
-        <p className="text-xs text-white/55 leading-relaxed border-t border-white/[0.07] pt-4">
+        <p className="text-xs text-white/55 leading-relaxed border-t border-white/[0.18] pt-4">
           {description}
         </p>
       )}
@@ -213,7 +214,7 @@ function CachedField({
       ? 'text-hm-blue'
       : 'text-white/80';
   return (
-    <div className="p-3 border-r border-b border-white/[0.07] last:border-r-0">
+    <div className="p-3 border-r border-b border-white/[0.18] last:border-r-0">
       <div className="text-[8px] font-light tracking-[0.22em] uppercase text-white/[0.18] mb-1">{label}</div>
       <div className={`font-mono text-xs ${color}`}>{value}</div>
     </div>

@@ -41,7 +41,7 @@ export default function EnsRecord({ ens }: Props) {
       </div>
 
       {/* Meta strip */}
-      <div className="grid grid-cols-2 md:grid-cols-3 border border-white/[0.07] rounded-lg overflow-hidden">
+      <div className="grid grid-cols-2 md:grid-cols-3 border border-white/[0.18] rounded-lg overflow-hidden">
         <Meta label="Type" value={ens.contractType} />
         <Meta label="Forward" value={ens.forwardSet ? 'set' : 'no'} accent={ens.forwardSet ? 'green' : 'red'} />
         <Meta label="Reverse" value={ens.reverseSet ? 'set' : 'skipped'} accent={ens.reverseSet ? 'green' : undefined} />
@@ -51,7 +51,7 @@ export default function EnsRecord({ ens }: Props) {
         <div className="text-[9px] font-light tracking-[0.26em] uppercase text-white/40 mb-2">
           Text Records
         </div>
-        <div className="bg-white/[0.025] border border-white/[0.07] rounded-md p-3 space-y-1.5 font-mono text-[11px] max-h-64 overflow-y-auto">
+        <div className="bg-black border border-white/10 rounded-md p-3 space-y-1.5 font-mono text-[11px] max-h-64 overflow-y-auto">
           {Object.entries(ens.records ?? {}).map(([k, v]) => (
             <div key={k} className="flex gap-3">
               <span className="text-white/40 w-40 shrink-0">{k}</span>
@@ -78,7 +78,7 @@ export default function EnsRecord({ ens }: Props) {
 function Meta({ label, value, accent }: { label: string; value: string; accent?: 'green' | 'red' }) {
   const color = accent === 'green' ? 'text-hm-green' : accent === 'red' ? 'text-hm-red' : 'text-white/55';
   return (
-    <div className="px-4 py-3 border-r border-white/[0.07] last:border-r-0">
+    <div className="px-4 py-3 border-r border-white/[0.18] last:border-r-0">
       <div className="text-[8px] font-light tracking-[0.22em] uppercase text-white/[0.18] mb-1">{label}</div>
       <div className={`font-mono text-[11px] ${color}`}>{value}</div>
     </div>
