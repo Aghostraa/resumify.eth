@@ -1,0 +1,203 @@
+# Sourcify
+
+# Sourcify Bounty
+
+## Description
+
+***What is required to complete this bounty?*** 
+
+Build a tool, platform, or application that makes meaningful use of Sourcify's open dataset of verified smart contracts. The dataset includes 27M+ verified contracts across 100+ EVM chains, each with full source code, bytecodes, ABI, compiler metadata, storage layouts and more. You can access the dataset through the [Parquet file export](https://docs.sourcify.dev/docs/repository/download-dataset/), [Google BigQuery](https://docs.sourcify.dev/docs/bigquery/), or the [Sourcify API](https://docs.sourcify.dev/docs/api/) and [4byte Signature API](https://docs.sourcify.dev/docs/api/). You may combine Sourcify data with other data sources.
+
+***What are examples of use cases you are looking to solve?***
+
+- **AI-powered contract explainer**: Use verified source code and metadata to build an AI tool that explains what any contract does in plain language, highlights risks, or generates documentation
+- **Smart contract analytics platform**: Analyze patterns across millions of verified contracts, for example most used libraries, common vulnerability patterns, upgrade patterns, or storage layout evolution
+- **AI-assisted Solidity development**: Train or fine-tune models on verified contract source code to power code completion, security analysis, or pattern-based suggestions
+- **Security pattern detector**: Mine the dataset for known vulnerability patterns, rug-pull schemes, or anomalous contract structures across the ecosystem
+- **Decompiler enhancement**: Use verified sources as ground truth to build or improve a bytecode-to-source decompiler, or an AI-powered bytecode explainer
+- **Contract similarity search**: Build a search engine where you paste an address, bytecode, or source code and find similar verified contracts across chains. Use bytecode or source code patterns, or AST similarity to match contracts.
+
+These are starting points. We welcome any novel use of the data.
+
+***What are the UX, Privacy, other requirements?***
+
+- Must use Sourcify data (through Parquet files, BigQuery, or API) as a core component
+- Open source
+- Working demo or prototype
+
+## Judging Criteria
+
+***How are you judging this bounty? What specific criteria do projects need to be aware of?***
+
+Projects will be judged on four criteria, weighted equally:
+
+1. **Use of Sourcify data**: How creatively and deeply does the project leverage Sourcify's verified contract dataset? Surface-level API calls score lower than projects that exploit the unique properties of the data (source code, metadata, storage layouts, compiler settings).
+2. **Impact & usefulness**: Does this solve a real problem for developers, researchers, or the broader Ethereum ecosystem? Could this become a tool people actually use?
+3. **Technical execution**: Code quality, architecture decisions, and how much was accomplished during the hackathon.
+4. **Novelty**: Does this approach something in a new way? We're looking for ideas that don't already exist as established tools.
+
+## Prize
+
+**How many project winners? (First place, second place, etc.)**
+
+Three winners.
+
+**Information about the prize token/value/distribution:** 
+
+1st place: $2,000
+2nd place: $1,200
+3rd place: $800
+
+Total: $4,000 (USDC or equivalent)
+
+## Mentors
+
+Please include at least one mentor available on site, and one Telegram/other communication tool contact.
+
+| name | expertise | contact | availability |
+| --- | --- | --- | --- |
+| Manuel Wedler | Full Stack Engineer at Sourcify | Telegram: @manuelwedler | on site |
+| Kaan Uzdoğan | Full Stack Engineer at Sourcify | Telegram: @kuzdogan | online |
+
+## Resources
+
+**Contacts: hello@sourcify.dev**
+
+**Resource Links:**
+
+- Sourcify documentation: [https://docs.sourcify.dev](https://docs.sourcify.dev/)
+- Parquet dataset download: https://docs.sourcify.dev/docs/repository/download-dataset/
+- Google BigQuery dataset: https://docs.sourcify.dev/docs/bigquery/
+- Sourcify Server & 4byte Signature API: https://docs.sourcify.dev/docs/api/
+- Sourcify GitHub: https://github.com/ethereum/sourcify
+- Repository browser: [https://repo.sourcify.dev](https://repo.sourcify.dev/)
+
+# ENS
+
+# Introduction
+
+ENS is the identity layer for the new internet. It turns wallet addresses into human-readable names like `yourname.eth` — a portable, onchain profile that works across every app, chain, and wallet. Developers use ENS to replace raw addresses with real identities, build decentralized websites, and create scalable subname ecosystems on L2. As AI agents become first-class onchain actors, ENS is how you give them a name, a reputation, and a place to be found.
+
+Used by Coinbase, Uniswap, Venmo, and thousands more — ENS is the username layer web3 has been building toward.
+
+<aside>
+💡
+
+We're offering **$4,000 in total prizes**, split across two tracks of **$2,000 each**.
+
+</aside>
+
+## **🤖 Bounty 1: Best ENS Integration for AI Agents**
+
+### **What is required to complete this bounty?**
+
+AI agents need persistent, human-readable identities too. Build a functional project where ENS is the identity mechanism for one or more AI agents. ENS should be doing real work — resolving the agent's address, storing its metadata, gating access, enabling discovery, or coordinating agent-to-agent interaction.
+
+### **What are examples of use cases you are looking to solve?**
+
+<aside>
+💡
+
+Note: The most compelling projects weave together multiple ideas from this list — and beyond — in creative, meaningful ways.
+
+</aside>
+
+- Naming individual agents with ENS names or subnames (e.g., `trader.myfleet.eth`)
+- Spinning up a subname registry for a fleet of agents, with programmatic registration
+- Storing agent capabilities, model info, endpoints, or reputation in text records
+- Agent-to-agent discovery: one agent looks up another by ENS name and negotiates an interaction
+- Using ENS + verifiable credentials or attestations to let agents prove what they are
+- Delegation patterns where an agent acts on behalf of a named human principal
+
+### **What are the UX, Privacy, other requirements?**
+
+- The ENS integration must be obvious and functional — not a cosmetic add-on
+- No hard-coded values; resolution and lookups must run live
+- Text records are public, so don't store secrets — encrypted payloads or offchain resolvers where sensitive data is involved
+- Submit with a video or live demo link to present at the booth during judging
+
+### Judging Criteria
+
+How are you judging this bounty? What specific criteria do projects need to be aware of?
+
+1. **How central ENS is to the agent's identity** — does removing ENS break the product, or is it decorative?
+2. **Technical execution** — clean use of resolvers, records, subnames, or CCIP-Read where appropriate
+3. **Originality** — does this show a use pattern the ecosystem hasn't seen yet?
+4. **Completeness** — is the demo functional end-to-end with no hard-coded values?
+5. **Clarity of presentation** — can you explain how ENS is utilized and why in three minutes?
+
+### Prizes
+
+**$2,000 total**, split across two winners:
+
+- 🥇 1st place — **$1,250**
+- 🥈 2nd place — **$750**
+
+## **✨ Bounty 2: Most Creative Use of ENS**
+
+### **What is required to complete this bounty?**
+
+Most people know ENS for name → address lookups. We want to see what else it can do. Store verifiable credentials or zk proofs in text records. Build privacy features with auto-rotating addresses on each resolution. Use subnames as access tokens. Build anything where ENS is doing something beyond a vanilla name → address resolution — and where it meaningfully improves the product. Surprise us!
+
+### **What are examples of use cases you are looking to solve?**
+
+<aside>
+💡
+
+Note: The most compelling projects weave together multiple ideas from this list — and beyond — in creative, meaningful ways.
+
+</aside>
+
+- Storing verifiable credentials, attestations, or zk proofs in text records
+- Privacy primitives: stealth addresses (EIP-5564), auto-rotating addresses per resolution, or dual-key ECDH schemes
+- Subnames as access tokens, ticketing, or membership credentials
+- Using ENS as the router for multichain payments via ENSIP-9 / ENSIP-11 coin types
+- Decentralized websites and content addressing via `contenthash`
+- Social graphs, reputation systems, or follow/notification infrastructure built on text records
+- Offchain subname trees resolved via CCIP-Read with cryptographic guarantees
+- Anything that makes us go "oh, we hadn't thought of that"
+
+### **What are the UX, Privacy, other requirements?**
+
+- ENS must clearly improve the product — if it's a swap-in for a hardcoded string, that's not enough
+- Submit with a video or live demo link to present at the booth during judging
+
+### Judging Criteria
+
+How are you judging this bounty? What specific criteria do projects need to be aware of?
+
+1. **Creativity** — is this a use of ENS that surprises us?
+2. **Product fit** — does ENS actually make the product better, or is it tacked on?
+3. **Technical depth** — thoughtful use of resolvers, records, CCIP-Read, wildcard resolution, or subname architecture
+4. **Completeness** — functional demo, no hard-coded values
+5. **Clarity** — can a judge understand the ENS-specific contribution quickly?
+
+### Prize
+
+**$2,000 total**, split across two winners:
+
+- 🥇 1st place — **$1,250**
+- 🥈 2nd place — **$750**
+
+## Mentors
+
+Please include at least one mentor available on site, and one Telegram/other communication tool contact.
+
+| name | expertise | contact | availability |
+| --- | --- | --- | --- |
+| workemon.eth | ENS for AI, Generalist | TG: workemon  | whole event |
+| tanrikulu.eth | Generalist | TG: md_tanrikulu |  |
+|  |  |  |  |
+
+## Resources
+
+**Contacts:** 
+
+- ENS booth on site throughout the event
+- Telegram: @workemon
+
+**Resource Links:**
+
+- ENS Docs — https://docs.ens.domains/
+- Building with AI — https://docs.ens.domains/building-with-ai/
+- ENSIPs (standards) — https://docs.ens.domains/ensip/
