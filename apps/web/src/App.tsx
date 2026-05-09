@@ -5,6 +5,7 @@ import Agent from './routes/Agent';
 import OctagonBackground from './components/OctagonBackground';
 import NavMark from './components/NavMark';
 import Footer from './components/Footer';
+import { WalletProvider, useWalletContext } from './contexts/WalletContext';
 
 function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
   return (
@@ -22,7 +23,8 @@ function NavTab({ to, children }: { to: string; children: React.ReactNode }) {
   );
 }
 
-export default function App() {
+function AppInner() {
+  const wallet = useWalletContext();
   return (
     <>
       <OctagonBackground />
@@ -46,7 +48,24 @@ export default function App() {
             <a className="hm-cta hidden sm:inline-flex" href="/extension">
               Get the Extension
             </a>
-            <div className="hm-cta hm-cta-primary">Connect Wallet</div>
+            {wallet.address ? (
+              <div className="flex items-center gap-2">
+                <span className="font-mono text-xs text-hm-green hidden sm:block">
+                  {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
+                </span>
+                <button onClick={wallet.disconnect} className="hm-cta hm-cta-primary">
+                  Disconnect
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => void wallet.connect()}
+                disabled={wallet.connecting}
+                className="hm-cta hm-cta-primary"
+              >
+                {wallet.connecting ? 'Connecting…' : 'Connect Wallet'}
+              </button>
+            )}
           </div>
         </header>
 
@@ -62,5 +81,13 @@ export default function App() {
         <Footer />
       </div>
     </>
+  );
+}
+
+export default function App() {
+  return (
+    <WalletProvider>
+      <AppInner />
+    </WalletProvider>
   );
 }

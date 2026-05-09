@@ -4,6 +4,7 @@ import ScoreBreakdown from './ScoreBreakdown';
 import EnsRecord from './EnsRecord';
 import OliLabels from './OliLabels';
 import SecurityFindings from './SecurityFindings';
+import ClaimReverseButton from './ClaimReverseButton';
 
 interface Props {
   result: AnalyzerResult;
@@ -79,7 +80,7 @@ export default function IdentityCard({ result }: Props) {
             >
               {ens.name}
             </a>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button
                 onClick={() => navigator.clipboard.writeText(ens.name)}
                 className="text-[9px] tracking-[0.22em] uppercase border border-white/[0.07] rounded-md px-3 py-1.5 text-white/40 hover:border-white/30 hover:text-white transition-colors"
@@ -104,6 +105,7 @@ export default function IdentityCard({ result }: Props) {
               >
                 View Source
               </a>
+              <ClaimReverseButton contractAddress={address} ensName={ens.name} />
             </div>
           </div>
         )}

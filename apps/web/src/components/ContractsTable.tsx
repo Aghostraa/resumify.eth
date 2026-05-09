@@ -1,9 +1,31 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import type { DeployedContract } from '../types';
 import { chainName, truncateAddress, formatDate } from '../utils/chains';
 import VerifyModal from './VerifyModal';
 import EnscribeButton from './EnscribeButton';
 import type { WalletState } from '../hooks/useWallet';
+
+interface EnsHint { ensName: string }
+const ensCache = new Map<string, EnsHint | null>();
+
+function useEnsHint(address: string): EnsHint | null | 'loading' {
+  const [state, setState] = useState<EnsHint | null | 'loading'>(() => {
+    if (ensCache.has(address)) return ensCache.get(address) ?? null;
+    return 'loading';
+  });
+  useEffect(() => {
+    if (ensCache.has(address)) { setState(ensCache.get(address) ?? null); return; }
+    fetch(`/api/cached/${address}`)
+      .then((r) => r.json())
+      .then((d: { cached: boolean; ensName?: string }) => {
+        const result = d.cached && d.ensName ? { ensName: d.ensName } : null;
+        ensCache.set(address, result);
+        setState(result);
+      })
+      .catch(() => { ensCache.set(address, null); setState(null); });
+  }, [address]);
+  return state;
+}
 
 interface Props {
   deployments: DeployedContract[];
@@ -83,6 +105,9 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
                 <Th label="Chain" sortKey="chainId" current={sortKey} onSort={handleSort} />
                 <Th label="Deployed" sortKey="deployedAt" current={sortKey} onSort={handleSort} />
                 <Th label="Verified" sortKey="verified" current={sortKey} onSort={handleSort} />
+                <th className="text-left px-4 py-3 text-[9px] tracking-[0.26em] uppercase text-white/[0.22] font-normal">
+                  ENS Identity
+                </th>
                 <th className="px-4 py-3" />
               </tr>
             </thead>
@@ -188,6 +213,7 @@ function ContractRow({
   wallet?: WalletState;
 }) {
   const name = d.contractName ?? d.blockscoutName;
+  const ens = useEnsHint(d.address);
 
   return (
     <tr
@@ -241,6 +267,23 @@ function ContractRow({
           <span className="flex items-center gap-1.5 font-mono text-xs text-hm-red/80">
             <span>✗</span> Unverified
           </span>
+        )}
+      </td>
+      <td className="px-4 py-3">
+        {ens === 'loading' ? (
+          <span className="font-mono text-[10px] text-white/[0.18]">…</span>
+        ) : ens ? (
+          <a
+            href={`https://app.ens.domains/${ens.ensName}`}
+            target="_blank"
+            rel="noreferrer"
+            className="font-mono text-xs text-hm-green hover:underline truncate max-w-[160px] block"
+            title={ens.ensName}
+          >
+            {ens.ensName}
+          </a>
+        ) : (
+          <span className="font-mono text-[10px] text-white/[0.18]">—</span>
         )}
       </td>
       <td className="px-4 py-3">

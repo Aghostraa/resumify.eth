@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { nameContract } from '@enscribe/enscribe';
+import { getAddress } from 'viem';
 import type { WalletState } from '../hooks/useWallet';
 
 interface Props {
@@ -26,21 +27,31 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
     setState('busy');
     setError(null);
     try {
+      const eth = (window as unknown as { ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
+      if (eth) {
+        const currentChain = await eth.request({ method: 'eth_chainId' }) as string;
+        if (parseInt(currentChain, 16) !== 11155111) {
+          await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
+        }
+      }
+
       const slug = (contractName ?? contractAddress.slice(2, 8)).toLowerCase().replace(/[^a-z0-9-]/g, '');
       const label = `${contractAddress.slice(2, 8).toLowerCase()}-${slug || 'contract'}`;
       const name = `${label}.${NAMESPACE}`;
 
       const result = await nameContract({
         name,
-        contractAddress,
-        walletClient: wallet.walletClient as never,
+        contractAddress: getAddress(contractAddress),
+        walletClient: wallet.walletClient,
         chainName: 'sepolia',
       });
 
       setEnsName(result.name);
       setState('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Enscribe failed');
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error('[Enscribe]', err);
+      setError(msg);
       setState('error');
     }
   }

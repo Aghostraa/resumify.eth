@@ -132,9 +132,10 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
   emit({ step: 'explain', ok: true });
 
   // [7] NAME — only when Sourcify verified (we have real data to name)
-  console.log('  [7/9] ENS naming…');
+  console.log(`  [7/9] ENS naming… (verified=${sourcify.verified} partial=${sourcify.partial} chainId=${chainId})`);
   let ens: MintResult | null = null;
   if (!sourcify.verified && !sourcify.partial) {
+    console.warn(`  [7/9] ENS skip: contract not verified on Sourcify (status=${sourcify.status})`);
     emit({ step: 'name+metadata', ok: false, error: 'skipped — contract not verified on Sourcify' });
   } else {
     let similarTo: string[] = [];
@@ -142,6 +143,7 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
       similarTo = await getSimilarContracts(oli.ownerProject, address, 5);
     }
     try {
+      console.log(`  [7/9] calling mintEnsIdentity for ${address} on chainId=${chainId}`);
       ens = await mintEnsIdentity({
         address,
         chainId,
@@ -152,9 +154,9 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
         oli: { ownerProject: oli?.ownerProject, similarTo },
         description: explanation,
       });
+      console.log(`  [7/9] ENS minted: ${ens.name} contractType=${ens.contractType} reverse=${ens.reverseSet}`);
       emit({ step: 'name+metadata', ok: true, detail: `${ens.name} type=${ens.contractType} reverse=${ens.reverseSet}` });
 
-      // Populate session cache so cached lookup works immediately (before reverse resolves)
       setCachedAnalysis(address, {
         ensName: ens.name,
         records: {
@@ -167,7 +169,9 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
         },
       });
     } catch (err) {
-      emit({ step: 'name+metadata', ok: false, error: err instanceof Error ? err.message : String(err) });
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error(`  [7/9] ENS mint FAILED for ${address}:`, err);
+      emit({ step: 'name+metadata', ok: false, error: msg });
     }
   }
 

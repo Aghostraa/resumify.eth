@@ -1,10 +1,16 @@
-import { useState, type FormEvent } from 'react';
+import { useState, useEffect, useRef, type FormEvent } from 'react';
 import { ALL_CHAINS } from '../utils/chains';
 
 const SAMPLES = [
   { label: 'USDC (Sepolia)', address: '0x1c7D4B196Cb0C7B01d743Fbc6116a902379C7238' },
   { label: 'WETH (Sepolia)', address: '0xfFf9976782d46CC05630D1f6eBAb18b2324d6B14' },
 ];
+
+interface CachedHint {
+  ensName: string;
+  score?: string;
+  pattern?: string;
+}
 
 interface Props {
   onSubmit: (input: { address?: string; sourceCode?: string; chainId: number }) => void;
@@ -14,6 +20,10 @@ interface Props {
 }
 
 type Mode = 'address' | 'source';
+
+function isValidAddress(s: string) {
+  return /^0x[0-9a-fA-F]{40}$/.test(s.trim());
+}
 
 export default function ContractInput({
   onSubmit,
@@ -25,6 +35,31 @@ export default function ContractInput({
   const [sourceCode, setSourceCode] = useState('');
   const [chainId, setChainId] = useState(initialChainId);
   const [mode, setMode] = useState<Mode>('address');
+  const [hint, setHint] = useState<CachedHint | null>(null);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    setHint(null);
+    if (!isValidAddress(address)) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      fetch(`/api/cached/${address.trim()}`)
+        .then((r) => r.json())
+        .then((data: { cached: boolean; ensName?: string; records?: Record<string, string> }) => {
+          if (data.cached && data.ensName) {
+            setHint({
+              ensName: data.ensName,
+              score: data.records?.['trust-score'],
+              pattern: data.records?.['pattern'],
+            });
+          } else {
+            setHint(null);
+          }
+        })
+        .catch(() => setHint(null));
+    }, 600);
+    return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
+  }, [address]);
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
@@ -120,6 +155,35 @@ export default function ContractInput({
               {disabled ? 'Analyzing…' : 'Identify'}
             </button>
           </div>
+        </div>
+      )}
+
+      {mode === 'address' && hint && (
+        <div className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-hm-green/20 bg-hm-green/[0.04] animate-fade-up">
+          <div className="w-1.5 h-1.5 rounded-full bg-hm-green shrink-0" />
+          <div className="flex-1 min-w-0 flex items-center gap-2 flex-wrap">
+            <a
+              href={`https://app.ens.domains/${hint.ensName}`}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-xs text-hm-green hover:underline truncate"
+            >
+              {hint.ensName}
+            </a>
+            {hint.score && (
+              <span className="text-[9px] tracking-[0.16em] uppercase text-white/30">
+                score {hint.score}
+              </span>
+            )}
+            {hint.pattern && (
+              <span className="text-[9px] tracking-[0.16em] uppercase text-white/30">
+                · {hint.pattern}
+              </span>
+            )}
+          </div>
+          <span className="text-[9px] tracking-[0.16em] uppercase text-hm-green/60 shrink-0">
+            Already identified
+          </span>
         </div>
       )}
 

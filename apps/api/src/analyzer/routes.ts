@@ -75,9 +75,29 @@ analyzerRouter.get('/api/agent', async (_req, res) => {
 });
 
 analyzerRouter.get('/api/cached/:address', async (req, res) => {
-  const cached = await getCachedAnalysis(req.params.address).catch(() => null);
-  if (!cached) { res.json({ cached: false }); return; }
-  res.json({ cached: true, ensName: cached.ensName, records: cached.records });
+  const address = req.params.address;
+
+  // Check our namespace first (has full records)
+  const cached = await getCachedAnalysis(address).catch(() => null);
+  if (cached) {
+    res.json({ cached: true, ensName: cached.ensName, records: cached.records, source: 'hallmarked' });
+    return;
+  }
+
+  // Forward lookup — any ENS primary name for this address (outside our namespace)
+  try {
+    const { createPublicClient, http } = await import('viem');
+    const { sepolia } = await import('viem/chains');
+    const { getEnsName } = await import('viem/ens');
+    const client = createPublicClient({ chain: sepolia, transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org') });
+    const ensName = await getEnsName(client, { address: address as `0x${string}` });
+    if (ensName) {
+      res.json({ cached: true, ensName, records: {}, source: 'ens-forward' });
+      return;
+    }
+  } catch { /* ignore */ }
+
+  res.json({ cached: false });
 });
 
 analyzerRouter.get('/api/analyze/stream', async (req, res) => {
@@ -96,22 +116,28 @@ analyzerRouter.get('/api/analyze/stream', async (req, res) => {
   };
 
   // Return cached result unless force=true
+  console.log(`[stream] address=${address} chainId=${chainId} force=${force} — checking cache…`);
   if (address && force !== 'true') {
     const cached = await getCachedAnalysis(address).catch(() => null);
     if (cached) {
+      console.log(`[stream] cache HIT for ${address}: ensName=${cached.ensName} — returning cached, skipping pipeline`);
       send('cached', cached);
       res.end();
       return;
     }
+    console.log(`[stream] cache MISS for ${address} — running pipeline`);
   }
 
   try {
+    console.log(`[stream] starting pipeline for address=${address} chainId=${chainId}`);
     const result = await runPipeline(
       { address: address!, chainId: chainId ? Number(chainId) : DEFAULT_DEMO_CHAIN_ID, sourceCode },
       (step) => send('step', step),
     );
+    console.log(`[stream] pipeline done: score=${result.score?.total} ens=${result.ens?.name ?? 'none'}`);
     send('result', result);
   } catch (err) {
+    console.error(`[stream] pipeline FAILED for ${address}:`, err);
     send('error', { error: err instanceof Error ? err.message : 'pipeline failed' });
   }
   res.end();

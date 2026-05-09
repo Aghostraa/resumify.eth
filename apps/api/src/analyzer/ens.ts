@@ -1,5 +1,5 @@
 import { nameContract, getContractAddresses, type NameContractResult } from '@enscribe/enscribe';
-import { createWalletClient, createPublicClient, http, namehash, type Hex } from 'viem';
+import { createWalletClient, createPublicClient, http, fallback, namehash, encodeFunctionData, type Hex } from 'viem';
 import { privateKeyToAccount } from 'viem/accounts';
 import { mainnet, sepolia, base, baseSepolia, optimism, arbitrum, linea } from 'viem/chains';
 import { TEXT_RECORD_KEYS, type SecurityFinding } from '@contractid/core';
@@ -27,6 +27,13 @@ const RESOLVER_TEXT_ABI = [
     ],
     outputs: [],
   },
+  {
+    name: 'multicall',
+    type: 'function',
+    stateMutability: 'nonpayable',
+    inputs: [{ name: 'data', type: 'bytes[]' }],
+    outputs: [{ name: 'results', type: 'bytes[]' }],
+  },
 ] as const;
 
 export interface MintInputs {
@@ -38,7 +45,7 @@ export interface MintInputs {
     reasoning?: string;
   } | null;
   score: { label: string; total: number };
-  sourcify: { verified?: boolean; partial?: boolean } | null;
+  sourcify: { verified?: boolean; partial?: boolean; contractName?: string } | null;
   security: SecurityFinding[];
   oli?: { ownerProject?: string; similarTo?: string[] } | null;
   description?: string;
@@ -72,9 +79,11 @@ function clientsForChain(network: NetworkConfig) {
   return { account, walletClient, publicClient };
 }
 
-function buildSubname(address: string, pattern: string | undefined, parent: string): { label: string; full: string } {
+function buildSubname(address: string, contractName: string | undefined, pattern: string | undefined, parent: string): { label: string; full: string } {
   const shortHash = address.slice(2, 8).toLowerCase();
-  const slug = (pattern ?? 'unknown').toLowerCase().replace(/[^a-z0-9-]/g, '') || 'unknown';
+  // Prefer Sourcify contractName over AI-classified pattern
+  const rawName = contractName ?? pattern ?? 'unknown';
+  const slug = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'unknown';
   const label = `${shortHash}-${slug}`;
   return { label, full: `${label}.${parent}` };
 }
@@ -100,7 +109,7 @@ function buildTextRecords(inputs: MintInputs, network: NetworkConfig): Record<st
     [TEXT_RECORD_KEYS.chains]: network.name,
     [TEXT_RECORD_KEYS.classifiedAt]: new Date().toISOString(),
     [TEXT_RECORD_KEYS.description]: inputs.description ?? inputs.classification?.reasoning ?? '',
-    [TEXT_RECORD_KEYS.url]: `https://contractid.app/c/${network.chainId}/${inputs.address}`,
+    [TEXT_RECORD_KEYS.url]: `${network.explorerUrl}/address/${inputs.address}`,
   };
   if (inputs.oli?.ownerProject) records[TEXT_RECORD_KEYS.ownerProject] = inputs.oli.ownerProject;
   if (inputs.oli?.similarTo?.length) records[TEXT_RECORD_KEYS.similarTo] = inputs.oli.similarTo.join(',');
@@ -109,46 +118,60 @@ function buildTextRecords(inputs: MintInputs, network: NetworkConfig): Record<st
 
 export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
   const network = getNetwork(inputs.chainId);
+  console.log(`  [ens] network=${network.name} rpcEnv=${network.rpcUrlEnvKey} rpc=${process.env[network.rpcUrlEnvKey]}`);
+
   const { account, walletClient, publicClient } = clientsForChain(network);
+  console.log(`  [ens] agent wallet=${account.address}`);
 
-  const { full } = buildSubname(inputs.address, inputs.classification?.pattern, network.ensParent);
+  const { full } = buildSubname(inputs.address, inputs.sourcify?.contractName, inputs.classification?.pattern, network.ensParent);
   const subnameNode = namehash(full);
+  console.log(`  [ens] subname=${full} node=${subnameNode}`);
 
+  console.log(`  [ens] calling nameContract(name=${full}, chainName=${network.enscribeChainName})`);
   const namingResult: NameContractResult = await nameContract({
     name: full,
     contractAddress: inputs.address,
     walletClient: walletClient as never,
     chainName: network.enscribeChainName,
   });
+  console.log(`  [ens] nameContract done: success=${namingResult.success} contractType=${namingResult.contractType}`, namingResult.transactions);
 
   const ensContracts = getContractAddresses(network.enscribeChainName as never);
   const resolverAddress = ensContracts.PUBLIC_RESOLVER as `0x${string}`;
+  console.log(`  [ens] resolver=${resolverAddress}`);
 
   const records = buildTextRecords(inputs, network);
-  const setTextHashes: string[] = [];
+  console.log(`  [ens] writing ${Object.keys(records).length} text records via multicall…`);
 
-  // Wait for Enscribe's last tx to be indexed by the RPC node before querying nonce.
-  // Pocket Network returns stale nonce if we query immediately after nameContract returns.
   const lastEnscribeTx = (namingResult.transactions.reverseResolution
     ?? namingResult.transactions.forwardResolution
     ?? namingResult.transactions.subname) as `0x${string}` | undefined;
   if (lastEnscribeTx) {
+    console.log(`  [ens] waiting for last enscribe tx ${lastEnscribeTx}…`);
     await publicClient.waitForTransactionReceipt({ hash: lastEnscribeTx, timeout: 120_000 });
+    console.log(`  [ens] enscribe tx confirmed`);
   }
 
-  let nonce = await publicClient.getTransactionCount({ address: account.address, blockTag: 'pending' });
-  for (const [key, value] of Object.entries(records)) {
-    if (!value) continue;
-    const tx = await walletClient.writeContract({
-      address: resolverAddress,
-      abi: RESOLVER_TEXT_ABI,
-      functionName: 'setText',
-      args: [subnameNode, key, value],
-      nonce: nonce++,
-    });
-    await publicClient.waitForTransactionReceipt({ hash: tx, timeout: 120_000 });
-    setTextHashes.push(tx);
-  }
+  const calls = Object.entries(records)
+    .filter(([, value]) => !!value)
+    .map(([key, value]) =>
+      encodeFunctionData({
+        abi: RESOLVER_TEXT_ABI,
+        functionName: 'setText',
+        args: [subnameNode, key, value],
+      }),
+    );
+
+  console.log(`  [ens] multicall with ${calls.length} setText calls…`);
+  const multicallTx = await walletClient.writeContract({
+    address: resolverAddress,
+    abi: RESOLVER_TEXT_ABI,
+    functionName: 'multicall',
+    args: [calls],
+  });
+  console.log(`  [ens] multicall tx=${multicallTx} — waiting…`);
+  await publicClient.waitForTransactionReceipt({ hash: multicallTx, timeout: 120_000 });
+  console.log(`  [ens] multicall confirmed`);
 
   return {
     name: full,
@@ -163,7 +186,7 @@ export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
       subname: namingResult.transactions.subname,
       forward: namingResult.transactions.forwardResolution,
       reverse: namingResult.transactions.reverseResolution,
-      setText: setTextHashes,
+      setText: [multicallTx],
     },
     explorerUrl: namingResult.explorerUrl,
   };

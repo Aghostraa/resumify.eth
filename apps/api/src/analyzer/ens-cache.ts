@@ -8,7 +8,7 @@ const NAMESPACE = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
 function getClient() {
   return createPublicClient({
     chain: sepolia,
-    transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://eth-sepolia-testnet.api.pocket.network'),
+    transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org'),
   });
 }
 

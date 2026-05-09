@@ -13,7 +13,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
   const panelRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const DEFAULT_CHAINS = [1, 10, 56, 137, 8453, 42161, 324, 100, 42220, 43114];
+  const DEFAULT_CHAINS = [11155111];
   const selectedSet = new Set(selected ?? DEFAULT_CHAINS);
   const isDefault = selected === null;
 
@@ -63,7 +63,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
   }
 
   const label = isDefault
-    ? 'Top 10 Chains'
+    ? 'Sepolia'
     : selected!.length === 0
     ? 'No Chains'
     : selected!.length === 1
@@ -100,7 +100,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
       </button>
 
       {open && (
-        <div className="absolute right-0 top-full mt-2 z-50 w-80 bg-black border border-white/10 rounded-[10px] shadow-2xl animate-fade-in overflow-hidden">
+        <div className="absolute right-0 top-full mt-2 z-50 w-80 border border-white/10 rounded-[10px] shadow-2xl animate-fade-in overflow-hidden" style={{ background: '#0c0c0c' }}>
           <div className="p-2 border-b border-white/[0.07]">
             <div className="relative">
               <svg
@@ -152,7 +152,7 @@ export default function ChainPicker({ selected, onChange }: Props) {
             </div>
           )}
 
-          <div className="px-3 py-2 border-b border-white/[0.07] bg-white/[0.02]">
+          <div className="px-3 py-2 border-b border-white/[0.07]" style={{ background: '#111' }}>
             <p className="text-[10px] font-light leading-relaxed text-white/40">
               Verified contracts come from Sourcify (all chains). These chains are scanned for{' '}
               <span className="text-white/55">unverified</span> contracts only.

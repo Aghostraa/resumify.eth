@@ -55,21 +55,21 @@ export default function Analyzer() {
     <section className="px-6 md:px-12 pt-16 pb-16 max-w-[1100px] mx-auto">
       {/* Hero */}
       <div className="flex flex-col items-center text-center mb-12">
-        <div className="flex items-center gap-2 mb-6 animate-fade-up">
+        <div className="flex items-center gap-2 mb-8 animate-fade-up">
           <div className="hm-eyebrow-dot animate-eyebrow-pulse" />
           <div className="text-[10px] font-light tracking-[0.32em] uppercase text-white/30">
-            Contract Identity Layer
+            Live on Ethereum Sepolia
           </div>
         </div>
         <h1
           className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
-          style={{ fontSize: 'clamp(32px, 5vw, 60px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
+          style={{ fontSize: 'clamp(36px, 6vw, 76px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
         >
-          Every contract<br />
-          <em className="not-italic text-white/[0.28]">deserves</em> an identity
+          Your onchain work,<br />
+          <em className="not-italic text-white/[0.28]">scored and identified</em>
         </h1>
         <p
-          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[560px] animate-fade-up"
+          className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] animate-fade-up"
           style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
         >
           Paste any contract address. Hallmark verifies it against Sourcify, scores it with Claude + EthGuard,

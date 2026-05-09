@@ -1,10 +1,16 @@
 import { useState, useCallback } from 'react';
-import { createWalletClient, createPublicClient, custom, http } from 'viem';
+import { createWalletClient, createPublicClient, custom, http, fallback, type WalletClient } from 'viem';
 import { sepolia } from 'viem/chains';
 
+const SEPOLIA_RPC_FALLBACKS = [
+  'https://sepolia.drpc.org',
+  'https://rpc.ankr.com/eth_sepolia',
+  'https://ethereum-sepolia-rpc.publicnode.com',
+];
+
 export interface WalletState {
-  address: string | null;
-  walletClient: ReturnType<typeof createWalletClient> | null;
+  address: `0x${string}` | null;
+  walletClient: WalletClient | null;
   publicClient: ReturnType<typeof createPublicClient>;
   connecting: boolean;
   connect: () => Promise<void>;
@@ -13,12 +19,12 @@ export interface WalletState {
 
 const publicClient = createPublicClient({
   chain: sepolia,
-  transport: http(),
+  transport: fallback(SEPOLIA_RPC_FALLBACKS.map((url) => http(url))),
 });
 
 export function useWallet(): WalletState {
-  const [address, setAddress] = useState<string | null>(null);
-  const [walletClient, setWalletClient] = useState<ReturnType<typeof createWalletClient> | null>(null);
+  const [address, setAddress] = useState<`0x${string}` | null>(null);
+  const [walletClient, setWalletClient] = useState<WalletClient | null>(null);
   const [connecting, setConnecting] = useState(false);
 
   const connect = useCallback(async () => {
@@ -27,8 +33,13 @@ export function useWallet(): WalletState {
     setConnecting(true);
     try {
       const accounts = await eth.request({ method: 'eth_requestAccounts' });
-      const client = createWalletClient({ chain: sepolia, transport: custom(eth) });
-      setAddress(accounts[0]);
+      const account = accounts[0] as `0x${string}`;
+      const client = createWalletClient({
+        account,
+        chain: sepolia,
+        transport: fallback([custom(eth), ...SEPOLIA_RPC_FALLBACKS.map((url) => http(url))]),
+      });
+      setAddress(account);
       setWalletClient(client);
     } finally {
       setConnecting(false);

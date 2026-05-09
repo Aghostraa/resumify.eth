@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { DeveloperResume } from '../types';
 import SearchBar from '../components/SearchBar';
@@ -7,20 +7,30 @@ import StatsRow from '../components/StatsRow';
 import ContractsTable from '../components/ContractsTable';
 import ChainPicker from '../components/ChainPicker';
 import { fetchResume } from '../api/client';
-import { useWallet } from '../hooks/useWallet';
+import { useWalletContext } from '../contexts/WalletContext';
 
-const DEFAULT_BLOCKSCOUT_CHAINS = [1, 10, 56, 100, 137, 324, 8453, 42161, 42220, 43114];
+const DEFAULT_BLOCKSCOUT_CHAINS = [11155111];
 
 type AppState = 'idle' | 'loading' | 'loaded' | 'error';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const wallet = useWallet();
+  const wallet = useWalletContext();
   const [state, setState] = useState<AppState>('idle');
   const [resume, setResume] = useState<DeveloperResume | null>(null);
   const [error, setError] = useState<string>('');
   const [lastQuery, setLastQuery] = useState('');
   const [selectedChains, setSelectedChains] = useState<number[] | null>(null);
+  const autoLoadedRef = useRef<string | null>(null);
+
+  // Auto-load portfolio when wallet connects
+  useEffect(() => {
+    if (wallet.address && autoLoadedRef.current !== wallet.address && state === 'idle') {
+      autoLoadedRef.current = wallet.address;
+      void search(wallet.address);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wallet.address]);
 
   async function search(query: string, chains = selectedChains) {
     setState('loading');
@@ -82,8 +92,8 @@ export default function Dashboard() {
           className="font-display font-extralight tracking-[0.04em] leading-[1.08] text-white mb-5 max-w-[820px] animate-fade-up"
           style={{ fontSize: 'clamp(36px, 6vw, 76px)', animationDelay: '0.1s', animationFillMode: 'both', opacity: 0 }}
         >
-          Every developer<br />
-          <em className="not-italic text-white/[0.28]">deserves</em> a resume
+          Your onchain work,<br />
+          <em className="not-italic text-white/[0.28]">scored and identified</em>
         </h1>
 
         {/* Sub */}
@@ -91,8 +101,8 @@ export default function Dashboard() {
           className="font-light tracking-[0.04em] leading-[1.7] text-white/30 max-w-[520px] mb-12 animate-fade-up"
           style={{ fontSize: 'clamp(13px, 1.6vw, 16px)', animationDelay: '0.2s', animationFillMode: 'both', opacity: 0 }}
         >
-          Search any address or ENS name. Hallmark surfaces every contract you've shipped across
-          100+ chains, scores them, and turns your onchain history into a developer resume.
+          Search any address or ENS name. Hallmark surfaces every contract you've deployed across
+          100+ chains, scores each one with AI security analysis, and mints a permanent ENS identity — in seconds.
         </p>
 
         {/* Search */}
@@ -130,29 +140,8 @@ export default function Dashboard() {
           <StatCell value="27M+" label="Verified Contracts" />
           <StatCell value="100+" label="EVM Chains" />
           <StatCell value="ENS" label="Identity Layer" />
-          <StatCell value="0" label="Hardcoded Values" />
         </div>
 
-        {/* Wallet status */}
-        <div
-          className="mt-10 flex items-center gap-3 animate-fade-up"
-          style={{ animationDelay: '0.5s', animationFillMode: 'both', opacity: 0 }}
-        >
-          {wallet.address ? (
-            <>
-              <span className="font-mono text-xs text-hm-green">
-                {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
-              </span>
-              <button onClick={wallet.disconnect} className="hm-cta">
-                Disconnect
-              </button>
-            </>
-          ) : (
-            <button onClick={() => void wallet.connect()} disabled={wallet.connecting} className="hm-cta">
-              {wallet.connecting ? 'Connecting…' : 'Connect Wallet'}
-            </button>
-          )}
-        </div>
       </section>
     );
   }
@@ -164,20 +153,6 @@ export default function Dashboard() {
           <SearchBar onSearch={search} loading={state === 'loading'} />
         </div>
         <ChainPicker selected={selectedChains} onChange={handleChainsChange} />
-        {wallet.address ? (
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="font-mono text-xs text-hm-green hidden sm:block">
-              {wallet.address.slice(0, 6)}…{wallet.address.slice(-4)}
-            </span>
-            <button onClick={wallet.disconnect} className="hm-cta">
-              Disconnect
-            </button>
-          </div>
-        ) : (
-          <button onClick={() => void wallet.connect()} disabled={wallet.connecting} className="hm-cta">
-            {wallet.connecting ? 'Connecting…' : 'Connect Wallet'}
-          </button>
-        )}
       </div>
 
       {state === 'loading' && (
