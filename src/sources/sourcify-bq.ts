@@ -36,7 +36,7 @@ export async function fetchSourceifyVerified(address: string): Promise<Sourceify
   const [rows] = await bq.query({
     query,
     params: { address: addressNoPrefix },
-    location: 'US',
+    location: 'europe-west1',
   });
 
   return rows.map((r: Record<string, unknown>) => ({

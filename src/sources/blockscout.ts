@@ -1,8 +1,23 @@
 import type { DeployedContract } from '../types.js';
 
+const PRO_BASE = 'https://api.blockscout.com';
+
 const CHAIN_URLS: Record<number, string> = {
+  1:        'https://eth.blockscout.com',
+  10:       'https://optimism.blockscout.com',
+  56:       'https://bsc.blockscout.com',
+  100:      'https://gnosis.blockscout.com',
+  137:      'https://polygon.blockscout.com',
+  324:      'https://zksync.blockscout.com',
+  8453:     'https://base.blockscout.com',
+  42161:    'https://arbitrum.blockscout.com',
+  42220:    'https://celo.blockscout.com',
+  43114:    'https://avalanche.blockscout.com',
   11155111: 'https://eth-sepolia.blockscout.com',
+  17000:    'https://eth-holesky.blockscout.com',
+  84532:    'https://base-sepolia.blockscout.com',
 };
+
 const CONCURRENCY = 4;
 const BATCH_DELAY_MS = 300;
 const MAX_RETRIES = 2;
@@ -26,21 +41,46 @@ interface BlockscoutPage {
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
-async function fetchPage(chainId: number, address: string, params: Record<string, string> = {}): Promise<BlockscoutPage> {
-  const base = CHAIN_URLS[chainId];
-  if (!base) throw new Error(`Blockscout: no URL for chain ${chainId}`);
-  const url = new URL(`${base}/api/v2/addresses/${address}/transactions`);
+function isCreditsError(status: number, body: string): boolean {
+  return status === 402 || status === 401 ||
+    (status === 200 && body.includes('Out of credits')) ||
+    (status === 200 && body.includes('Unauthorized'));
+}
+
+async function fetchPage(
+  chainId: number,
+  address: string,
+  params: Record<string, string> = {},
+  useFallback = false,
+): Promise<BlockscoutPage> {
+  const apiKey = process.env.BLOCKSCOUT_API_KEY ?? '';
+  let url: URL;
+
+  if (!useFallback && apiKey) {
+    url = new URL(`${PRO_BASE}/${chainId}/api/v2/addresses/${address}/transactions`);
+    url.searchParams.set('apikey', apiKey);
+  } else {
+    const base = CHAIN_URLS[chainId];
+    if (!base) throw new Error(`Blockscout: no URL for chain ${chainId}`);
+    url = new URL(`${base}/api/v2/addresses/${address}/transactions`);
+  }
+
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
     const res = await fetch(url.toString());
+    const text = await res.text();
+
+    if (!useFallback && isCreditsError(res.status, text)) {
+      // Pro API out of credits — retry with chain-specific fallback
+      return fetchPage(chainId, address, params, true);
+    }
     if (res.status === 429) {
-      // Rate limited — back off and retry
       await sleep(1000 * (attempt + 1));
       continue;
     }
     if (!res.ok) throw new Error(`Blockscout ${chainId}: ${res.status}`);
-    return res.json() as Promise<BlockscoutPage>;
+    return JSON.parse(text) as BlockscoutPage;
   }
   throw new Error(`Blockscout ${chainId}: rate limited after ${MAX_RETRIES} retries`);
 }
@@ -86,13 +126,15 @@ export async function fetchDeployments(address: string, chainId: number): Promis
 }
 
 export async function fetchDeploymentsAllChains(address: string, chainIds: number[]): Promise<DeployedContract[]> {
+  // Only query chains we have URLs for (either Pro handles it, or fallback exists)
+  const supported = chainIds.filter((id) => CHAIN_URLS[id] !== undefined);
   const all: DeployedContract[] = [];
 
-  for (let i = 0; i < chainIds.length; i += CONCURRENCY) {
-    const batch = chainIds.slice(i, i + CONCURRENCY);
+  for (let i = 0; i < supported.length; i += CONCURRENCY) {
+    const batch = supported.slice(i, i + CONCURRENCY);
     const results = await Promise.allSettled(batch.map((id) => fetchDeployments(address, id)));
     all.push(...results.flatMap((r) => (r.status === 'fulfilled' ? r.value : [])));
-    if (i + CONCURRENCY < chainIds.length) await sleep(BATCH_DELAY_MS);
+    if (i + CONCURRENCY < supported.length) await sleep(BATCH_DELAY_MS);
   }
 
   return all;

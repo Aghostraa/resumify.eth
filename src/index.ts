@@ -8,7 +8,7 @@ export type { DeveloperResume, DeployedContract, ResumeOptions };
 
 // Default chains scanned by Blockscout for unverified contract discovery.
 // BigQuery always covers all chains for verified contracts regardless of this list.
-export const DEFAULT_BLOCKSCOUT_CHAINS = [11155111];
+export const DEFAULT_BLOCKSCOUT_CHAINS = [1, 10, 56, 100, 137, 324, 8453, 42161, 42220, 43114];
 
 export async function buildDeveloperResume(
   addressOrENS: string,

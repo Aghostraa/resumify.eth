@@ -7,7 +7,7 @@ import ContractsTable from './components/ContractsTable';
 import ChainPicker from './components/ChainPicker';
 
 // Mirrors DEFAULT_BLOCKSCOUT_CHAINS in src/index.ts
-const DEFAULT_BLOCKSCOUT_CHAINS = [1, 10, 56, 137, 8453, 42161, 324, 100, 42220, 43114];
+const DEFAULT_BLOCKSCOUT_CHAINS = [1, 10, 56, 100, 137, 324, 8453, 42161, 42220, 43114];
 
 type AppState = 'idle' | 'loading' | 'loaded' | 'error';
 
