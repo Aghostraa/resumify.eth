@@ -6,11 +6,12 @@ import VerifyModal from './VerifyModal';
 interface Props {
   deployments: DeployedContract[];
   onContractVerified: (address: string, chainId: number) => void;
+  onOpenAnalyzer?: (address: string, chainId: number) => void;
 }
 
 type SortKey = 'deployedAt' | 'chainId' | 'verified';
 
-export default function ContractsTable({ deployments, onContractVerified }: Props) {
+export default function ContractsTable({ deployments, onContractVerified, onOpenAnalyzer }: Props) {
   const [verifyTarget, setVerifyTarget] = useState<DeployedContract | null>(null);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('deployedAt');
@@ -81,6 +82,7 @@ export default function ContractsTable({ deployments, onContractVerified }: Prop
                   contract={d}
                   index={i}
                   onVerify={() => setVerifyTarget(d)}
+                  onOpenAnalyzer={onOpenAnalyzer ? () => onOpenAnalyzer(d.address, d.chainId) : undefined}
                 />
               ))}
               {pageItems.length === 0 && (
@@ -148,7 +150,12 @@ function Th({ label, sortKey, current, onSort }: { label: string; sortKey: SortK
   );
 }
 
-function ContractRow({ contract: d, index, onVerify }: { contract: DeployedContract; index: number; onVerify: () => void }) {
+function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer }: {
+  contract: DeployedContract;
+  index: number;
+  onVerify: () => void;
+  onOpenAnalyzer?: () => void;
+}) {
   const name = d.contractName ?? d.blockscoutName;
 
   return (
@@ -208,15 +215,25 @@ function ContractRow({ contract: d, index, onVerify }: { contract: DeployedContr
         )}
       </td>
       <td className="px-4 py-2.5">
-        {!d.verified && !d.isScam && (
-          <button
-            onClick={onVerify}
-            className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400
-                       hover:border-acid-500 hover:text-acid-500 transition-colors"
-          >
-            verify →
-          </button>
-        )}
+        <div className="flex gap-1.5">
+          {onOpenAnalyzer && (
+            <button
+              onClick={onOpenAnalyzer}
+              className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400 hover:border-acid-400 hover:text-acid-400 transition-colors"
+              title="Score with ContractID analyzer"
+            >
+              score →
+            </button>
+          )}
+          {!d.verified && !d.isScam && (
+            <button
+              onClick={onVerify}
+              className="font-mono text-xs px-2.5 py-1 rounded border border-ink-600 text-ink-400 hover:border-acid-500 hover:text-acid-500 transition-colors"
+            >
+              verify →
+            </button>
+          )}
+        </div>
       </td>
     </tr>
   );
