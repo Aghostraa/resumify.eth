@@ -1,26 +1,17 @@
 {
-  "name": "resumify",
+  "name": "contractid-monorepo",
   "version": "0.1.0",
-  "description": "Onchain developer resume — ENS identity + Blockscout deployments + Sourcify verification + OLI labels",
+  "private": true,
+  "description": "ContractID — onchain identity + scoring for smart contracts (api, web, extension, sdk)",
   "type": "module",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
   "scripts": {
-    "build": "tsc",
-    "dev": "tsx src/server.ts",
-    "start": "node dist/server.js"
+    "dev:api": "pnpm --filter @contractid/api dev",
+    "dev:web": "pnpm --filter @contractid/web dev",
+    "build": "pnpm -r build",
+    "typecheck": "pnpm -r typecheck"
   },
-  "dependencies": {
-    "@ensdomains/ensjs": "^4",
-    "@google-cloud/bigquery": "^7",
-    "dotenv": "^17.4.2",
-    "express": "^4",
-    "viem": "^2"
-  },
-  "devDependencies": {
-    "@types/express": "^4",
-    "@types/node": "^20",
-    "tsx": "^4",
-    "typescript": "^5"
+  "packageManager": "pnpm@9.0.0",
+  "engines": {
+    "node": ">=20"
   }
 }

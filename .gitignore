@@ -1,6 +1,22 @@
 node_modules/
 dist/
 .env
+.env.local
 *.json.key
 resumify-495714-7cd73c0a48d1.json
 
+# pnpm
+.pnpm-store/
+.pnpm-debug.log
+
+# build outputs
+**/dist/
+**/.vite/
+apps/*/dist/
+apps/*/.vite/
+packages/*/dist/
+
+# editor
+.DS_Store
+.vscode/
+.idea/

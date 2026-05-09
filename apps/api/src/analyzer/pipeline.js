@@ -8,7 +8,7 @@ import { calculateScore } from './scorer.js';
 import { mintEnsIdentity } from './ens.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PATTERNS_PATH = resolve(__dirname, '../cache/patterns.json');
+const PATTERNS_PATH = resolve(__dirname, '../../cache/patterns.json');
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-6';

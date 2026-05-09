@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 import { createPublicClient, http, namehash } from 'viem';
 import { sepolia } from 'viem/chains';
-import { runPipeline } from './agent/pipeline.js';
+import { runPipeline } from './analyzer/pipeline.js';
 
 const PUBLIC_RESOLVER_SEPOLIA = '0x8FADE66B79cC9f707aB26799354482EB93a5B7dD';
 const AGENT_RECORD_KEYS = ['name', 'description', 'agent-context', 'agent-endpoint[web]'];
