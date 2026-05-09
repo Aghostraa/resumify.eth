@@ -1,0 +1,301 @@
+[
+  {
+    "slug": "erc20-standard",
+    "name": "ERC-20 Standard Token",
+    "category": "token",
+    "adoptionScore": 25,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base", "sepolia"],
+    "signatures": [
+      "totalSupply()",
+      "balanceOf(address)",
+      "transfer(address,uint256)",
+      "transferFrom(address,address,uint256)",
+      "approve(address,uint256)",
+      "allowance(address,address)"
+    ],
+    "events": ["Transfer(address,address,uint256)", "Approval(address,address,uint256)"],
+    "riskMarkers": ["mintable-without-cap", "owner-can-pause-transfers", "blacklist-function"],
+    "referenceImpl": "OpenZeppelin v4.9 ERC20.sol"
+  },
+  {
+    "slug": "erc721-standard",
+    "name": "ERC-721 NFT",
+    "category": "nft",
+    "adoptionScore": 22,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base", "sepolia"],
+    "signatures": [
+      "ownerOf(uint256)",
+      "balanceOf(address)",
+      "transferFrom(address,address,uint256)",
+      "safeTransferFrom(address,address,uint256)",
+      "approve(address,uint256)",
+      "setApprovalForAll(address,bool)",
+      "tokenURI(uint256)"
+    ],
+    "events": ["Transfer(address,address,uint256)", "Approval(address,address,uint256)"],
+    "riskMarkers": ["unbounded-mint", "owner-can-burn-any", "missing-royalty-standard"],
+    "referenceImpl": "OpenZeppelin v4.9 ERC721.sol"
+  },
+  {
+    "slug": "erc1155-multi",
+    "name": "ERC-1155 Multi-Token",
+    "category": "nft",
+    "adoptionScore": 18,
+    "chains": ["mainnet", "arbitrum", "polygon", "base"],
+    "signatures": [
+      "balanceOf(address,uint256)",
+      "balanceOfBatch(address[],uint256[])",
+      "safeTransferFrom(address,address,uint256,uint256,bytes)",
+      "safeBatchTransferFrom(address,address,uint256[],uint256[],bytes)"
+    ],
+    "events": ["TransferSingle(address,address,address,uint256,uint256)", "TransferBatch(address,address,address,uint256[],uint256[])"],
+    "riskMarkers": ["unbounded-batch-mint", "missing-uri-immutability"],
+    "referenceImpl": "OpenZeppelin v4.9 ERC1155.sol"
+  },
+  {
+    "slug": "uniswap-v2-pair",
+    "name": "Uniswap V2 Pair (LP)",
+    "category": "dex",
+    "adoptionScore": 23,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": [
+      "swap(uint256,uint256,address,bytes)",
+      "mint(address)",
+      "burn(address)",
+      "skim(address)",
+      "sync()",
+      "getReserves()",
+      "token0()",
+      "token1()"
+    ],
+    "events": ["Swap(address,uint256,uint256,uint256,uint256,address)", "Sync(uint112,uint112)"],
+    "riskMarkers": ["fork-with-modified-fee-logic", "non-standard-reserve-math"],
+    "referenceImpl": "Uniswap v2-core UniswapV2Pair.sol"
+  },
+  {
+    "slug": "uniswap-v3-pool",
+    "name": "Uniswap V3 Pool",
+    "category": "dex",
+    "adoptionScore": 21,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": [
+      "swap(address,bool,int256,uint160,bytes)",
+      "mint(address,int24,int24,uint128,bytes)",
+      "burn(int24,int24,uint128)",
+      "collect(address,int24,int24,uint128,uint128)",
+      "slot0()"
+    ],
+    "events": ["Swap(address,address,int256,int256,uint160,uint128,int24)", "Mint(address,address,int24,int24,uint128,uint256,uint256)"],
+    "riskMarkers": ["custom-tick-math", "modified-fee-tier"],
+    "referenceImpl": "Uniswap v3-core UniswapV3Pool.sol"
+  },
+  {
+    "slug": "proxy-eip1967",
+    "name": "EIP-1967 Transparent Proxy",
+    "category": "proxy",
+    "adoptionScore": 22,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base", "sepolia"],
+    "signatures": ["upgradeTo(address)", "upgradeToAndCall(address,bytes)", "implementation()", "admin()"],
+    "events": ["Upgraded(address)", "AdminChanged(address,address)"],
+    "riskMarkers": ["admin-eoa-not-multisig", "no-timelock-on-upgrade", "implementation-not-verified"],
+    "referenceImpl": "OpenZeppelin TransparentUpgradeableProxy"
+  },
+  {
+    "slug": "proxy-uups",
+    "name": "UUPS Proxy (EIP-1822)",
+    "category": "proxy",
+    "adoptionScore": 19,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": ["upgradeTo(address)", "upgradeToAndCall(address,bytes)", "proxiableUUID()"],
+    "events": ["Upgraded(address)"],
+    "riskMarkers": ["missing-onlyOwner-on-upgradeTo", "implementation-self-destruct-risk"],
+    "referenceImpl": "OpenZeppelin UUPSUpgradeable"
+  },
+  {
+    "slug": "gnosis-safe",
+    "name": "Gnosis Safe Multisig",
+    "category": "wallet",
+    "adoptionScore": 24,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base", "sepolia"],
+    "signatures": [
+      "execTransaction(address,uint256,bytes,uint8,uint256,uint256,uint256,address,address,bytes)",
+      "getOwners()",
+      "getThreshold()",
+      "nonce()"
+    ],
+    "events": ["ExecutionSuccess(bytes32,uint256)", "ExecutionFailure(bytes32,uint256)"],
+    "riskMarkers": ["threshold-of-one", "single-owner"],
+    "referenceImpl": "Safe.sol v1.4"
+  },
+  {
+    "slug": "compound-ctoken",
+    "name": "Compound cToken",
+    "category": "lending",
+    "adoptionScore": 16,
+    "chains": ["mainnet", "arbitrum", "polygon"],
+    "signatures": [
+      "mint(uint256)",
+      "redeem(uint256)",
+      "borrow(uint256)",
+      "repayBorrow(uint256)",
+      "exchangeRateCurrent()",
+      "supplyRatePerBlock()"
+    ],
+    "events": ["Mint(address,uint256,uint256)", "Redeem(address,uint256,uint256)", "Borrow(address,uint256,uint256,uint256)"],
+    "riskMarkers": ["modified-interest-model", "oracle-not-chainlink"],
+    "referenceImpl": "Compound v2 CErc20.sol"
+  },
+  {
+    "slug": "aave-v3-pool",
+    "name": "Aave v3 Pool",
+    "category": "lending",
+    "adoptionScore": 17,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": [
+      "supply(address,uint256,address,uint16)",
+      "withdraw(address,uint256,address)",
+      "borrow(address,uint256,uint256,uint16,address)",
+      "repay(address,uint256,uint256,address)",
+      "flashLoan(address,address[],uint256[],uint256[],address,bytes,uint16)"
+    ],
+    "events": ["Supply(address,address,address,uint256,uint16)", "Borrow(address,address,address,uint256,uint8,uint256,uint16)"],
+    "riskMarkers": ["non-aave-fork-with-modified-ltv"],
+    "referenceImpl": "Aave v3 Pool.sol"
+  },
+  {
+    "slug": "erc4626-vault",
+    "name": "ERC-4626 Tokenized Vault",
+    "category": "vault",
+    "adoptionScore": 14,
+    "chains": ["mainnet", "arbitrum", "optimism", "base"],
+    "signatures": [
+      "asset()",
+      "totalAssets()",
+      "convertToShares(uint256)",
+      "convertToAssets(uint256)",
+      "deposit(uint256,address)",
+      "mint(uint256,address)",
+      "withdraw(uint256,address,address)",
+      "redeem(uint256,address,address)"
+    ],
+    "events": ["Deposit(address,address,uint256,uint256)", "Withdraw(address,address,address,uint256,uint256)"],
+    "riskMarkers": ["donation-attack-vector", "first-depositor-frontrun"],
+    "referenceImpl": "OpenZeppelin v4.9 ERC4626.sol"
+  },
+  {
+    "slug": "governor-bravo",
+    "name": "Governor Bravo / OZ Governor",
+    "category": "governance",
+    "adoptionScore": 13,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon"],
+    "signatures": [
+      "propose(address[],uint256[],bytes[],string)",
+      "castVote(uint256,uint8)",
+      "castVoteWithReason(uint256,uint8,string)",
+      "queue(uint256)",
+      "execute(uint256)"
+    ],
+    "events": ["ProposalCreated(uint256,address,address[],uint256[],string[],bytes[],uint256,uint256,string)", "VoteCast(address,uint256,uint8,uint256,string)"],
+    "riskMarkers": ["no-timelock", "low-quorum-threshold"],
+    "referenceImpl": "OpenZeppelin Governor"
+  },
+  {
+    "slug": "timelock-controller",
+    "name": "Timelock Controller",
+    "category": "governance",
+    "adoptionScore": 13,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": [
+      "schedule(address,uint256,bytes,bytes32,bytes32,uint256)",
+      "execute(address,uint256,bytes,bytes32,bytes32)",
+      "cancel(bytes32)",
+      "getMinDelay()"
+    ],
+    "events": ["CallScheduled(bytes32,uint256,address,uint256,bytes,bytes32,uint256)", "CallExecuted(bytes32,uint256,address,uint256,bytes)"],
+    "riskMarkers": ["zero-min-delay", "admin-can-self-grant-roles"],
+    "referenceImpl": "OpenZeppelin TimelockController"
+  },
+  {
+    "slug": "create2-factory",
+    "name": "CREATE2 Deterministic Factory",
+    "category": "factory",
+    "adoptionScore": 10,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon", "base"],
+    "signatures": ["deploy(bytes,bytes32)", "computeAddress(bytes32,bytes32)"],
+    "events": ["Deployed(address,bytes32)"],
+    "riskMarkers": ["unrestricted-deploy", "init-code-hash-mismatch"],
+    "referenceImpl": "Create2 from OpenZeppelin"
+  },
+  {
+    "slug": "erc6551-account",
+    "name": "ERC-6551 Token Bound Account",
+    "category": "account",
+    "adoptionScore": 6,
+    "chains": ["mainnet", "polygon", "base"],
+    "signatures": ["execute(address,uint256,bytes,uint8)", "token()", "owner()", "isValidSigner(address,bytes)"],
+    "events": [],
+    "riskMarkers": ["non-canonical-registry", "missing-replay-protection"],
+    "referenceImpl": "ERC-6551 Reference Implementation"
+  },
+  {
+    "slug": "merkle-airdrop",
+    "name": "Merkle Airdrop Distributor",
+    "category": "distribution",
+    "adoptionScore": 9,
+    "chains": ["mainnet", "arbitrum", "optimism", "base"],
+    "signatures": ["claim(uint256,address,uint256,bytes32[])", "isClaimed(uint256)", "merkleRoot()"],
+    "events": ["Claimed(uint256,address,uint256)"],
+    "riskMarkers": ["no-claim-deadline", "owner-can-update-root"],
+    "referenceImpl": "Uniswap MerkleDistributor"
+  },
+  {
+    "slug": "vesting-wallet",
+    "name": "Token Vesting Wallet",
+    "category": "vesting",
+    "adoptionScore": 8,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon"],
+    "signatures": ["release()", "release(address)", "released()", "released(address)", "vestedAmount(uint64)", "vestedAmount(address,uint64)"],
+    "events": ["EtherReleased(uint256)", "ERC20Released(address,uint256)"],
+    "riskMarkers": ["beneficiary-mutable-by-owner"],
+    "referenceImpl": "OpenZeppelin VestingWallet"
+  },
+  {
+    "slug": "staking-rewards",
+    "name": "Synthetix-style Staking Rewards",
+    "category": "staking",
+    "adoptionScore": 11,
+    "chains": ["mainnet", "arbitrum", "optimism", "polygon"],
+    "signatures": ["stake(uint256)", "withdraw(uint256)", "getReward()", "exit()", "rewardPerToken()", "earned(address)"],
+    "events": ["Staked(address,uint256)", "Withdrawn(address,uint256)", "RewardPaid(address,uint256)"],
+    "riskMarkers": ["reward-rate-mutable", "reward-token-can-be-pulled"],
+    "referenceImpl": "Synthetix StakingRewards.sol"
+  },
+  {
+    "slug": "honeypot",
+    "name": "Honeypot / Trap Pattern",
+    "category": "malicious",
+    "adoptionScore": 0,
+    "chains": [],
+    "signatures": [],
+    "events": [],
+    "riskMarkers": [
+      "transfer-reverts-for-non-owner",
+      "approve-overrides-balance",
+      "hidden-blacklist",
+      "tax-only-on-sell",
+      "max-tx-set-to-zero"
+    ],
+    "referenceImpl": null
+  },
+  {
+    "slug": "unknown",
+    "name": "Unknown / Custom Pattern",
+    "category": "other",
+    "adoptionScore": 5,
+    "chains": [],
+    "signatures": [],
+    "events": [],
+    "riskMarkers": ["no-similar-pattern-found"],
+    "referenceImpl": null
+  }
+]
