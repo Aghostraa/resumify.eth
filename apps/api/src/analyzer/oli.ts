@@ -1,6 +1,33 @@
-import { EAS, Offchain, SchemaEncoder, ZERO_BYTES32 } from '@ethereum-attestation-service/eas-sdk';
+import { createRequire } from 'node:module';
 import { JsonRpcProvider, Wallet } from 'ethers';
 import type { OliLabel } from '@contractid/core';
+
+// EAS SDK ships an ESM build with broken (extensionless) relative imports;
+// load via createRequire to force the CJS bundle.
+const easRequire = createRequire(import.meta.url);
+const { EAS, SchemaEncoder, ZERO_BYTES32 } = easRequire('@ethereum-attestation-service/eas-sdk') as {
+  EAS: new (address: string) => {
+    connect: (signer: unknown) => void;
+    getOffchain: () => Promise<{
+      signOffchainAttestation: (
+        args: {
+          schema: string;
+          recipient: string;
+          time: bigint;
+          expirationTime: bigint;
+          revocable: boolean;
+          refUID: string;
+          data: string;
+        },
+        signer: unknown,
+      ) => Promise<{ uid: string; [k: string]: unknown }>;
+    }>;
+  };
+  SchemaEncoder: new (raw: string) => {
+    encodeData: (items: { name: string; value: string; type: string }[]) => string;
+  };
+  ZERO_BYTES32: string;
+};
 
 const OLI_API_BASE = process.env.OLI_API_BASE ?? 'https://api.openlabelsinitiative.org';
 const OLI_OFFCHAIN_URL = process.env.OLI_OFFCHAIN_URL ?? 'https://base.easscan.org/offchain/store';
