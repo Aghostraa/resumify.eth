@@ -122,16 +122,13 @@ export default function NavMark({ size = 36 }: Props) {
       const rX = CX + 4 - bW;
       ctx!.fillStyle = 'rgba(255,255,255,0.92)';
       ctx!.beginPath();
-      // @ts-expect-error roundRect is supported in modern browsers
       ctx!.roundRect(lX, bY, bW, bH, 0.7);
       ctx!.fill();
       ctx!.beginPath();
-      // @ts-expect-error
       ctx!.roundRect(rX, bY, bW, bH, 0.7);
       ctx!.fill();
       ctx!.fillStyle = 'rgba(255,255,255,0.38)';
       ctx!.beginPath();
-      // @ts-expect-error
       ctx!.roundRect(lX, CY - 0.65, rX + bW - lX, 1.3, 0.65);
       ctx!.fill();
 
