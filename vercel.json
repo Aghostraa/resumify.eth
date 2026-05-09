@@ -1,0 +1,15 @@
+{
+  "buildCommand": "pnpm --filter @contractid/web build",
+  "outputDirectory": "apps/web/dist",
+  "installCommand": "pnpm install",
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://hallmark-api.fly.dev/api/:path*"
+    },
+    {
+      "source": "/resume/:path*",
+      "destination": "https://hallmark-api.fly.dev/resume/:path*"
+    }
+  ]
+}
