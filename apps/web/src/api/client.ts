@@ -29,7 +29,7 @@ export async function fetchCachedAnalysis(address: string): Promise<{ cached: bo
 }
 
 export function analyzeContractStream(
-  input: { address?: string; chainId?: number; sourceCode?: string; force?: boolean },
+  input: { address?: string; chainId?: number; sourceCode?: string; force?: boolean; developer?: string },
   onStep: (step: PipelineStep) => void,
   onCached?: (data: { ensName: string; records: Record<string, string> }) => void,
 ): Promise<AnalyzerResult | null> {
@@ -38,6 +38,7 @@ export function analyzeContractStream(
     ...(input.address ? { address: input.address } : {}),
     ...(input.sourceCode ? { sourceCode: input.sourceCode } : {}),
     ...(input.force ? { force: 'true' } : {}),
+    ...(input.developer ? { developer: input.developer } : {}),
   });
   return new Promise((resolve, reject) => {
     const es = new EventSource(`/api/analyze/stream?${params}`);

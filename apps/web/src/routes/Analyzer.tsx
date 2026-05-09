@@ -4,6 +4,7 @@ import ContractInput from '../components/ContractInput';
 import AnalysisProgress from '../components/AnalysisProgress';
 import IdentityCard from '../components/IdentityCard';
 import { analyzeContractStream, fetchAgentIdentity } from '../api/client';
+import { useWalletContext } from '../contexts/WalletContext';
 import type { AgentInfo, AnalyzerResult, PipelineStep } from '../types';
 
 interface CachedData {
@@ -13,6 +14,7 @@ interface CachedData {
 
 export default function Analyzer() {
   const params = useParams<{ chainId?: string; address?: string }>();
+  const wallet = useWalletContext();
   const [result, setResult] = useState<AnalyzerResult | null>(null);
   const [cached, setCached] = useState<CachedData | null>(null);
   const [loading, setLoading] = useState(false);
@@ -39,7 +41,7 @@ export default function Analyzer() {
     setSteps([]);
     try {
       const data = await analyzeContractStream(
-        input,
+        { ...input, developer: wallet.address ?? undefined },
         (step) => setSteps((prev) => [...prev, step]),
         (cachedData) => setCached(cachedData),
       );
@@ -119,6 +121,7 @@ export default function Analyzer() {
             if (params.address)
               void onSubmit({ address: params.address, chainId: Number(params.chainId ?? 11155111), force: true });
           }}
+          developerAddress={wallet.address ?? undefined}
         />
       )}
 
@@ -127,7 +130,7 @@ export default function Analyzer() {
   );
 }
 
-function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () => void }) {
+function CachedCard({ data, onReanalyze, developerAddress }: { data: CachedData; onReanalyze: () => void; developerAddress?: string }) {
   const r = data.records;
   const score = r['trust-score'];
   const pattern = r['pattern'];
@@ -151,8 +154,9 @@ function CachedCard({ data, onReanalyze }: { data: CachedData; onReanalyze: () =
         <button
           onClick={onReanalyze}
           className="text-[10px] tracking-[0.22em] uppercase text-white/40 hover:text-white border border-white/[0.18] hover:border-white/30 px-3 py-1.5 rounded-full transition-colors"
+          title={developerAddress ? 'Re-analyze and mint under your resume namespace' : 'Re-analyze'}
         >
-          Re-analyze →
+          {developerAddress ? 'Mint to resume →' : 'Re-analyze →'}
         </button>
       </div>
 
