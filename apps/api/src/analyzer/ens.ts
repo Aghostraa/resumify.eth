@@ -126,7 +126,16 @@ export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
 
   const records = buildTextRecords(inputs, network);
   const setTextHashes: string[] = [];
-  // Get nonce once and increment manually — avoids RPC returning stale pending nonce
+
+  // Wait for Enscribe's last tx to be indexed by the RPC node before querying nonce.
+  // Pocket Network returns stale nonce if we query immediately after nameContract returns.
+  const lastEnscribeTx = (namingResult.transactions.reverseResolution
+    ?? namingResult.transactions.forwardResolution
+    ?? namingResult.transactions.subname) as `0x${string}` | undefined;
+  if (lastEnscribeTx) {
+    await publicClient.waitForTransactionReceipt({ hash: lastEnscribeTx, timeout: 120_000 });
+  }
+
   let nonce = await publicClient.getTransactionCount({ address: account.address, blockTag: 'pending' });
   for (const [key, value] of Object.entries(records)) {
     if (!value) continue;
