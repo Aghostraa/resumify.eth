@@ -3,27 +3,28 @@ import type { DeployedContract } from '../types';
 import { chainName, truncateAddress, formatDate } from '../utils/chains';
 import VerifyModal from './VerifyModal';
 import EnscribeButton from './EnscribeButton';
-import type { WalletState } from '../hooks/useWallet';
 
 interface ContractCache { ensName: string; records: Record<string, string> }
 const cacheMap = new Map<string, ContractCache | null>();
 
-function useContractCache(address: string): ContractCache | null | 'loading' {
+function useContractCache(address: string, developerAddress?: string): ContractCache | null | 'loading' {
+  const cacheKey = developerAddress ? `${developerAddress}:${address}` : address;
   const [state, setState] = useState<ContractCache | null | 'loading'>(() => {
-    if (cacheMap.has(address)) return cacheMap.get(address) ?? null;
+    if (cacheMap.has(cacheKey)) return cacheMap.get(cacheKey) ?? null;
     return 'loading';
   });
   useEffect(() => {
-    if (cacheMap.has(address)) { setState(cacheMap.get(address) ?? null); return; }
-    fetch(`/api/cached/${address}`)
+    if (cacheMap.has(cacheKey)) { setState(cacheMap.get(cacheKey) ?? null); return; }
+    const params = new URLSearchParams({ ...(developerAddress ? { developer: developerAddress } : {}) });
+    fetch(`/api/cached/${address}?${params}`)
       .then((r) => r.json())
       .then((d: { cached: boolean; ensName?: string; records?: Record<string, string> }) => {
         const result = d.cached && d.ensName ? { ensName: d.ensName, records: d.records ?? {} } : null;
-        cacheMap.set(address, result);
+        cacheMap.set(cacheKey, result);
         setState(result);
       })
-      .catch(() => { cacheMap.set(address, null); setState(null); });
-  }, [address]);
+      .catch(() => { cacheMap.set(cacheKey, null); setState(null); });
+  }, [cacheKey, address, developerAddress]);
   return state;
 }
 
@@ -31,12 +32,12 @@ interface Props {
   deployments: DeployedContract[];
   onContractVerified: (address: string, chainId: number) => void;
   onOpenAnalyzer?: (address: string, chainId: number) => void;
-  wallet?: WalletState;
+  developerAddress?: string;
 }
 
 type SortKey = 'deployedAt' | 'chainId' | 'verified';
 
-export default function ContractsTable({ deployments, onContractVerified, onOpenAnalyzer, wallet }: Props) {
+export default function ContractsTable({ deployments, onContractVerified, onOpenAnalyzer, developerAddress }: Props) {
   const [verifyTarget, setVerifyTarget] = useState<DeployedContract | null>(null);
   const [filter, setFilter] = useState<'all' | 'verified' | 'unverified'>('all');
   const [sortKey, setSortKey] = useState<SortKey>('deployedAt');
@@ -116,7 +117,7 @@ export default function ContractsTable({ deployments, onContractVerified, onOpen
                 index={i}
                 onVerify={() => setVerifyTarget(d)}
                 onOpenAnalyzer={onOpenAnalyzer ? () => onOpenAnalyzer(d.address, d.chainId) : undefined}
-                wallet={wallet}
+                developerAddress={developerAddress}
               />
             ))}
             {pageItems.length === 0 && (
@@ -187,15 +188,15 @@ function Th({ label, sortKey, current, onSort }: {
   );
 }
 
-function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
+function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, developerAddress }: {
   contract: DeployedContract;
   index: number;
   onVerify: () => void;
   onOpenAnalyzer?: () => void;
-  wallet?: WalletState;
+  developerAddress?: string;
 }) {
   const name = d.contractName ?? d.blockscoutName;
-  const cache = useContractCache(d.address);
+  const cache = useContractCache(d.address, developerAddress);
   const [expanded, setExpanded] = useState(false);
   const hasCache = cache !== 'loading' && cache !== null;
 
@@ -299,7 +300,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
         {/* Actions — compact, no wrapping */}
         <td className="px-3 py-3" onClick={(e) => e.stopPropagation()}>
           <div className="flex items-center gap-1 justify-end">
-            {onOpenAnalyzer && (
+            {onOpenAnalyzer && !developerAddress && (
               <ActionBtn
                 onClick={onOpenAnalyzer}
                 title={hasCache ? 'Re-analyze' : 'Analyze & score'}
@@ -308,12 +309,11 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, wallet }: {
                 <ScoreIcon />
               </ActionBtn>
             )}
-            {d.verified && wallet && (
+            {d.chainId === 11155111 && (
               <EnscribeButton
                 contractAddress={d.address}
                 chainId={d.chainId}
-                contractName={d.contractName ?? d.blockscoutName}
-                wallet={wallet}
+                developerAddress={developerAddress}
               />
             )}
             {!d.verified && !d.isScam && (
@@ -376,6 +376,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
   const similarTo = r['similar-to'];
   const security = r['security-findings'];
   const ownerProject = r['owner-project'];
+  const issuedBy = r['issued-by'];
 
   const flagList = flags && flags !== 'none' ? flags.split(',').filter(Boolean) : [];
 
@@ -398,6 +399,17 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
             <span className="font-mono text-[9px] text-white/25 shrink-0">
               {new Date(classifiedAt).toLocaleDateString()}
             </span>
+          )}
+          {issuedBy && (
+            <a
+              href={`https://app.ens.domains/${issuedBy}`}
+              target="_blank"
+              rel="noreferrer"
+              className="font-mono text-[9px] text-white/30 hover:text-hm-blue transition-colors shrink-0"
+              title={`Issued by ${issuedBy}`}
+            >
+              · {issuedBy}
+            </a>
           )}
         </div>
         <div className="flex items-center gap-2 shrink-0">

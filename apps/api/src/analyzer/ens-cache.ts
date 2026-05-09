@@ -1,9 +1,20 @@
-import { createPublicClient, http } from 'viem';
+import { createPublicClient, http, namehash } from 'viem';
 import { sepolia } from 'viem/chains';
 import { getEnsName, getEnsText } from 'viem/ens';
 import { ALL_TEXT_RECORD_KEYS } from '@contractid/core';
+import { deriveDeveloperLabel, PUBLIC_RESOLVER_SEPOLIA } from './developer-profile.js';
 
 const NAMESPACE = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
+
+const RESOLVER_TEXT_ABI = [
+  {
+    name: 'text',
+    type: 'function',
+    stateMutability: 'view',
+    inputs: [{ name: 'node', type: 'bytes32' }, { name: 'key', type: 'string' }],
+    outputs: [{ type: 'string' }],
+  },
+] as const;
 
 function getClient() {
   return createPublicClient({
@@ -65,16 +76,51 @@ async function findNameByAddr(address: string): Promise<string | null> {
   return data?.data?.domains?.[0]?.name ?? null;
 }
 
-export async function getCachedAnalysis(address: string): Promise<CachedAnalysis | null> {
+async function fetchRecordsDirect(ensName: string): Promise<Record<string, string>> {
+  const client = getClient();
+  const node = namehash(ensName);
+  const records: Record<string, string> = {};
+  await Promise.allSettled(
+    ALL_TEXT_RECORD_KEYS.map(async (k) => {
+      try {
+        const val = await client.readContract({
+          address: PUBLIC_RESOLVER_SEPOLIA,
+          abi: RESOLVER_TEXT_ABI,
+          functionName: 'text',
+          args: [node, k],
+        }) as string;
+        if (val) records[k] = val;
+      } catch { /* skip */ }
+    }),
+  );
+  return records;
+}
+
+export async function getCachedAnalysis(address: string, developerAddress?: string): Promise<CachedAnalysis | null> {
   const key = address.toLowerCase();
 
-  // 1. Session cache — set immediately after mint, fastest path
+  // 1. Session cache
   const cached = sessionCache.get(key);
   if (cached) return cached;
 
   const client = getClient();
 
-  // 2. ENS reverse lookup — works for Ownable/ReverseClaimer contracts
+  // 2. Deterministic developer-scoped lookup — instant, no subgraph
+  if (developerAddress) {
+    try {
+      const devEns = await getEnsName(client, { address: developerAddress as `0x${string}` }).catch(() => null);
+      const devLabel = deriveDeveloperLabel(developerAddress, devEns);
+      const ensName = `${address.slice(2, 8).toLowerCase()}.resume.${devLabel}.${NAMESPACE}`;
+      const records = await fetchRecordsDirect(ensName);
+      if (Object.keys(records).length > 0) {
+        const result = { ensName, records };
+        sessionCache.set(key, result);
+        return result;
+      }
+    } catch { /* fall through */ }
+  }
+
+  // 3. ENS reverse lookup — works for Ownable/ReverseClaimer contracts
   try {
     const ensName = await getEnsName(client, { address: address as `0x${string}` });
     if (ensName?.endsWith(`.${NAMESPACE}`)) {
@@ -85,10 +131,9 @@ export async function getCachedAnalysis(address: string): Promise<CachedAnalysis
         return result;
       }
     }
-  } catch { /* no reverse record set */ }
+  } catch { /* no reverse record */ }
 
-  // 3. Subgraph forward lookup — find slug-named subname by its addr record.
-  //    Records are then fetched directly from the resolver (no subgraph lag on data).
+  // 4. Subgraph forward lookup — fallback for legacy slug names
   try {
     const ensName = await findNameByAddr(address);
     if (ensName) {

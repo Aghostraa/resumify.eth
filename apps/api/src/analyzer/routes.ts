@@ -3,6 +3,7 @@ import { createPublicClient, http, namehash } from 'viem';
 import { sepolia } from 'viem/chains';
 import { runPipeline } from './pipeline.js';
 import { getCachedAnalysis } from './ens-cache.js';
+import { registerDeveloperProfile, deriveDeveloperLabel } from './developer-profile.js';
 import { DEFAULT_DEMO_CHAIN_ID } from '@contractid/config';
 
 export const analyzerRouter: ExpressRouter = Router();
@@ -86,11 +87,56 @@ analyzerRouter.get('/api/agent', async (_req, res) => {
   });
 });
 
+analyzerRouter.post('/api/developer/register', async (req, res) => {
+  const { address, ensName } = (req.body ?? {}) as { address?: string; ensName?: string };
+  if (!address || !/^0x[0-9a-fA-F]{40}$/.test(address)) {
+    res.status(400).json({ error: 'Invalid address' });
+    return;
+  }
+  try {
+    const profile = await registerDeveloperProfile(address, ensName ?? null);
+    res.json(profile);
+  } catch (err) {
+    console.error('[/api/developer/register]', err);
+    res.status(500).json({ error: err instanceof Error ? err.message : 'registration failed' });
+  }
+});
+
+analyzerRouter.get('/api/developer/:address', async (req, res) => {
+  const { address } = req.params;
+  const ensName = req.query.ensName as string | undefined;
+  const label = deriveDeveloperLabel(address, ensName ?? null);
+  const namespace = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
+  res.json({
+    label,
+    profileName: `${label}.${namespace}`,
+    resumeName: `resume.${label}.${namespace}`,
+    ensProfileUrl: `https://app.ens.domains/${label}.${namespace}`,
+  });
+});
+
+analyzerRouter.get('/api/cached/check-resume', async (req, res) => {
+  const { label } = req.query as { label?: string };
+  if (!label) { res.json({ exists: false }); return; }
+  const namespace = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
+  const resumeName = `resume.${label}.${namespace}`;
+  try {
+    const { getEnsText } = await import('viem/ens');
+    const { createPublicClient, http } = await import('viem');
+    const { sepolia } = await import('viem/chains');
+    const client = createPublicClient({ chain: sepolia, transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org') });
+    const purpose = await getEnsText(client, { name: resumeName, key: 'purpose' }).catch(() => null);
+    res.json({ exists: !!purpose, resumeName });
+  } catch {
+    res.json({ exists: false });
+  }
+});
+
 analyzerRouter.get('/api/cached/:address', async (req, res) => {
   const address = req.params.address;
+  const developerAddress = req.query.developer as string | undefined;
 
-  // Check our namespace first (has full records)
-  const cached = await getCachedAnalysis(address).catch(() => null);
+  const cached = await getCachedAnalysis(address, developerAddress).catch(() => null);
   if (cached) {
     res.json({ cached: true, ensName: cached.ensName, records: cached.records, source: 'hallmarked' });
     return;
@@ -113,7 +159,7 @@ analyzerRouter.get('/api/cached/:address', async (req, res) => {
 });
 
 analyzerRouter.get('/api/analyze/stream', async (req, res) => {
-  const { address, chainId, sourceCode, force } = req.query as Record<string, string | undefined>;
+  const { address, chainId, sourceCode, force, developer } = req.query as Record<string, string | undefined>;
   if (!address && !sourceCode) {
     res.status(400).json({ error: 'Provide address or sourceCode' });
     return;
@@ -127,23 +173,42 @@ analyzerRouter.get('/api/analyze/stream', async (req, res) => {
     res.write(`event: ${event}\ndata: ${JSON.stringify(data)}\n\n`);
   };
 
-  // Return cached result unless force=true
-  console.log(`[stream] address=${address} chainId=${chainId} force=${force} — checking cache…`);
+  // Resolve developer label up-front so we can validate cache hits
+  let developerLabel: string | undefined;
+  if (developer && /^0x[0-9a-fA-F]{40}$/.test(developer)) {
+    const { getEnsName } = await import('viem/ens');
+    const devClient = createPublicClient({ chain: sepolia, transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org') });
+    const devEns = await getEnsName(devClient, { address: developer as `0x${string}` }).catch(() => null);
+    developerLabel = deriveDeveloperLabel(developer, devEns);
+  }
+
+  // Return cached result unless:
+  //   force=true  — caller wants a fresh analysis
+  //   developer is set but cached name is not under their resume namespace — force remint
+  console.log(`[stream] address=${address} chainId=${chainId} developer=${developer} devLabel=${developerLabel} force=${force} — checking cache…`);
   if (address && force !== 'true') {
-    const cached = await getCachedAnalysis(address).catch(() => null);
-    if (cached) {
-      console.log(`[stream] cache HIT for ${address}: ensName=${cached.ensName} — returning cached, skipping pipeline`);
+    const cached = await getCachedAnalysis(address, developer).catch(() => null);
+    const namespace = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
+    const expectedSuffix = developerLabel ? `.resume.${developerLabel}.${namespace}` : null;
+    const cacheValid = cached && (!expectedSuffix || cached.ensName.endsWith(expectedSuffix));
+    if (cacheValid) {
+      console.log(`[stream] cache HIT for ${address}: ensName=${cached!.ensName} — returning cached`);
       send('cached', cached);
       res.end();
       return;
     }
-    console.log(`[stream] cache MISS for ${address} — running pipeline`);
+    if (cached && !cacheValid) {
+      console.log(`[stream] cache HIT but wrong namespace (${cached.ensName}) — running pipeline for ${expectedSuffix}`);
+    } else {
+      console.log(`[stream] cache MISS for ${address} — running pipeline`);
+    }
   }
 
   try {
-    console.log(`[stream] starting pipeline for address=${address} chainId=${chainId}`);
+    console.log(`[stream] starting pipeline for address=${address} chainId=${chainId} developer=${developer} devLabel=${developerLabel}`);
+
     const result = await runPipeline(
-      { address: address!, chainId: chainId ? Number(chainId) : DEFAULT_DEMO_CHAIN_ID, sourceCode },
+      { address: address!, chainId: chainId ? Number(chainId) : DEFAULT_DEMO_CHAIN_ID, sourceCode, developerLabel },
       (step) => send('step', step),
     );
     console.log(`[stream] pipeline done: score=${result.score?.total} ens=${result.ens?.name ?? 'none'}`);

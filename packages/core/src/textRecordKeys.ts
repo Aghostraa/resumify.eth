@@ -12,6 +12,9 @@ export const TEXT_RECORD_KEYS = {
   description: 'description',
   url: 'url',
   attestation: 'attestation',
+  // ENSIP-26: links this contract identity back to the agent that issued it.
+  // Resolve this name to get the agent's agent-context and verify provenance.
+  issuedBy: 'issued-by',
 } as const;
 
 export type TextRecordKey = typeof TEXT_RECORD_KEYS[keyof typeof TEXT_RECORD_KEYS];

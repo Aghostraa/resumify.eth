@@ -1,57 +1,78 @@
 import { useState } from 'react';
-import { nameContract } from '@enscribe/enscribe';
-import { getAddress } from 'viem';
-import type { WalletState } from '../hooks/useWallet';
 
 interface Props {
   contractAddress: string;
   chainId: number;
-  contractName?: string | null;
-  wallet: WalletState;
+  developerAddress?: string;
 }
 
-const NAMESPACE = 'hallmarked.eth';
-
-export default function EnscribeButton({ contractAddress, chainId, contractName, wallet }: Props) {
+export default function EnscribeButton({ contractAddress, chainId, developerAddress }: Props) {
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
   const [ensName, setEnsName] = useState<string | null>(null);
+  const [progress, setProgress] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   if (chainId !== 11155111) return null;
 
-  async function handleEnscribe() {
-    if (!wallet.walletClient || !wallet.address) {
-      await wallet.connect();
-      return;
-    }
+  async function handleMint() {
     setState('busy');
     setError(null);
+    setProgress('starting…');
+
+    const params = new URLSearchParams({
+      address: contractAddress,
+      chainId: String(chainId),
+      force: 'false',
+      ...(developerAddress ? { developer: developerAddress } : {}),
+    });
+
     try {
-      const eth = (window as unknown as { ethereum?: { request: (a: { method: string; params?: unknown[] }) => Promise<unknown> } }).ethereum;
-      if (eth) {
-        const currentChain = await eth.request({ method: 'eth_chainId' }) as string;
-        if (parseInt(currentChain, 16) !== 11155111) {
-          await eth.request({ method: 'wallet_switchEthereumChain', params: [{ chainId: '0xaa36a7' }] });
-        }
-      }
+      const es = new EventSource(`/api/analyze/stream?${params}`);
 
-      const slug = (contractName ?? contractAddress.slice(2, 8)).toLowerCase().replace(/[^a-z0-9-]/g, '');
-      const label = `${contractAddress.slice(2, 8).toLowerCase()}-${slug || 'contract'}`;
-      const name = `${label}.${NAMESPACE}`;
-
-      const result = await nameContract({
-        name,
-        contractAddress: getAddress(contractAddress),
-        walletClient: wallet.walletClient,
-        chainName: 'sepolia',
+      es.addEventListener('step', (e) => {
+        const data = JSON.parse(e.data) as { step: string; ok: boolean; detail?: string };
+        setProgress(data.step);
       });
 
-      setEnsName(result.name);
-      setState('done');
+      es.addEventListener('result', (e) => {
+        const data = JSON.parse(e.data) as { ens?: { name: string } | null };
+        es.close();
+        if (data.ens?.name) {
+          setEnsName(data.ens.name);
+          setState('done');
+        } else {
+          setError('no ENS name minted — contract may not be verified');
+          setState('error');
+        }
+      });
+
+      es.addEventListener('cached', (e) => {
+        const data = JSON.parse(e.data) as { ensName?: string };
+        es.close();
+        if (data.ensName) {
+          setEnsName(data.ensName);
+          setState('done');
+        } else {
+          setState('idle');
+        }
+      });
+
+      es.addEventListener('error', (e) => {
+        const data = (e as MessageEvent).data ? JSON.parse((e as MessageEvent).data) as { error?: string } : {};
+        es.close();
+        setError(data.error ?? 'pipeline failed');
+        setState('error');
+      });
+
+      es.onerror = () => {
+        es.close();
+        if (state === 'busy') {
+          setError('connection lost');
+          setState('error');
+        }
+      };
     } catch (err) {
-      const msg = err instanceof Error ? err.message : String(err);
-      console.error('[Enscribe]', err);
-      setError(msg);
+      setError(err instanceof Error ? err.message : String(err));
       setState('error');
     }
   }
@@ -84,13 +105,13 @@ export default function EnscribeButton({ contractAddress, chainId, contractName,
 
   return (
     <button
-      onClick={handleEnscribe}
+      onClick={handleMint}
       disabled={state === 'busy'}
-      title="Name this contract on ENS"
+      title={state === 'busy' ? `${progress}` : developerAddress ? 'Score & add to resume' : 'Score & name on ENS'}
       className="w-7 h-7 flex items-center justify-center rounded-md border border-white/[0.18] text-white/30 hover:border-white/25 hover:text-white/70 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
     >
       {state === 'busy'
-        ? <span className="text-[9px]">…</span>
+        ? <span className="text-[7px] font-mono animate-pulse">{progress.slice(0, 4) || '…'}</span>
         : <EnsIcon />
       }
     </button>

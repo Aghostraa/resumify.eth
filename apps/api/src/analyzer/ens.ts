@@ -49,6 +49,7 @@ export interface MintInputs {
   security: SecurityFinding[];
   oli?: { ownerProject?: string; similarTo?: string[] } | null;
   description?: string;
+  developerLabel?: string;
 }
 
 export interface MintResult {
@@ -79,8 +80,19 @@ function clientsForChain(network: NetworkConfig) {
   return { account, walletClient, publicClient };
 }
 
-function buildSubname(address: string, contractName: string | undefined, pattern: string | undefined, parent: string): { label: string; full: string } {
+function buildSubname(
+  address: string,
+  contractName: string | undefined,
+  pattern: string | undefined,
+  parent: string,
+  developerLabel?: string,
+): { label: string; full: string } {
   const shortHash = address.slice(2, 8).toLowerCase();
+  if (developerLabel) {
+    // Under developer resume namespace: {addr6}.resume.{devLabel}.{parent}
+    return { label: shortHash, full: `${shortHash}.resume.${developerLabel}.${parent}` };
+  }
+  // Legacy: {addr6}-{slug}.{parent}
   const rawName = contractName ?? pattern ?? 'unknown';
   const slug = rawName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'unknown';
   const label = `${shortHash}-${slug}`;
@@ -98,6 +110,8 @@ function buildTextRecords(inputs: MintInputs, network: NetworkConfig): Record<st
       ? 'partial'
       : 'false';
 
+  const agentEnsName = process.env.AGENT_ENS_NAME ?? null;
+
   const records: Record<string, string> = {
     [TEXT_RECORD_KEYS.trustScore]: inputs.score.label,
     [TEXT_RECORD_KEYS.pattern]: inputs.classification?.pattern ?? 'unknown',
@@ -110,6 +124,7 @@ function buildTextRecords(inputs: MintInputs, network: NetworkConfig): Record<st
     [TEXT_RECORD_KEYS.description]: inputs.description ?? inputs.classification?.reasoning ?? '',
     [TEXT_RECORD_KEYS.url]: `${network.explorerUrl}/address/${inputs.address}`,
   };
+  if (agentEnsName) records[TEXT_RECORD_KEYS.issuedBy] = agentEnsName;
   if (inputs.oli?.ownerProject) records[TEXT_RECORD_KEYS.ownerProject] = inputs.oli.ownerProject;
   if (inputs.oli?.similarTo?.length) records[TEXT_RECORD_KEYS.similarTo] = inputs.oli.similarTo.join(',');
   return records;
@@ -122,7 +137,7 @@ export async function mintEnsIdentity(inputs: MintInputs): Promise<MintResult> {
   const { account, walletClient, publicClient } = clientsForChain(network);
   console.log(`  [ens] agent wallet=${account.address}`);
 
-  const { full } = buildSubname(inputs.address, inputs.sourcify?.contractName, inputs.classification?.pattern, network.ensParent);
+  const { full } = buildSubname(inputs.address, inputs.sourcify?.contractName, inputs.classification?.pattern, network.ensParent, inputs.developerLabel);
   const subnameNode = namehash(full);
   console.log(`  [ens] subname=${full} node=${subnameNode}`);
 

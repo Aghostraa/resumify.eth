@@ -1,5 +1,5 @@
 import { createPublicClient, http, type Address } from 'viem';
-import { mainnet } from 'viem/chains';
+import { mainnet, sepolia } from 'viem/chains';
 import {
   getEnsAddress,
   getEnsName,
@@ -9,6 +9,11 @@ import {
 const client = createPublicClient({
   chain: mainnet,
   transport: http('https://1rpc.io/eth'),
+});
+
+const sepoliaClient = createPublicClient({
+  chain: sepolia,
+  transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org'),
 });
 
 const TEXT_KEYS = [
@@ -39,13 +44,22 @@ export async function resolveENS(input: string): Promise<{ address: string; ensN
   const isAddress = /^0x[0-9a-fA-F]{40}$/.test(input);
 
   if (isAddress) {
-    const ensName = await getEnsName(client, { address: input as Address }).catch(() => null);
-    return { address: input, ensName };
+    // Try mainnet first, then Sepolia (for testnet-registered names like ahoura.eth on Sepolia)
+    const [mainnetName, sepoliaName] = await Promise.all([
+      getEnsName(client, { address: input as Address }).catch(() => null),
+      getEnsName(sepoliaClient, { address: input as Address }).catch(() => null),
+    ]);
+    return { address: input, ensName: mainnetName ?? sepoliaName };
   }
 
-  const address = await getEnsAddress(client, { name: input }).catch(() => null);
-  if (!address) throw new Error(`Could not resolve ENS name: ${input}`);
-  return { address, ensName: input };
+  // Forward resolve: try mainnet then Sepolia
+  const mainnetAddr = await getEnsAddress(client, { name: input }).catch(() => null);
+  if (mainnetAddr) return { address: mainnetAddr, ensName: input };
+
+  const sepoliaAddr = await getEnsAddress(sepoliaClient, { name: input }).catch(() => null);
+  if (sepoliaAddr) return { address: sepoliaAddr, ensName: input };
+
+  throw new Error(`Could not resolve ENS name: ${input}`);
 }
 
 export async function fetchENSProfile(ensName: string): Promise<ENSProfile> {

@@ -48,6 +48,7 @@ export interface PipelineInput {
   address: string;
   chainId: number;
   sourceCode?: string;
+  developerLabel?: string;
 }
 
 export interface PipelineStep {
@@ -83,7 +84,7 @@ function pickSources(sourcify: SourcifyResult): Record<string, string> {
 }
 
 export async function runPipeline(input: PipelineInput, onStep?: (step: PipelineStep) => void): Promise<PipelineResult> {
-  const { address, chainId, sourceCode } = input;
+  const { address, chainId, sourceCode, developerLabel } = input;
   if (!isSupportedChain(chainId)) throw new Error(`Unsupported chainId: ${chainId}`);
 
   const steps: PipelineStep[] = [];
@@ -153,6 +154,7 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
         security,
         oli: { ownerProject: oli?.ownerProject, similarTo },
         description: explanation,
+        developerLabel,
       });
       console.log(`  [7/9] ENS minted: ${ens.name} contractType=${ens.contractType} reverse=${ens.reverseSet}`);
       emit({ step: 'name+metadata', ok: true, detail: `${ens.name} type=${ens.contractType} reverse=${ens.reverseSet}` });

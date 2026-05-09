@@ -1,4 +1,4 @@
-const hre = require("hardhat");
+import hre from "hardhat";
 
 async function main() {
   const [deployer] = await hre.ethers.getSigners();
@@ -18,8 +18,9 @@ async function main() {
     const contract = await Factory.deploy(...args);
     await contract.waitForDeployment();
     const addr = await contract.getAddress();
-    deployed[name] = addr;
-    console.log(`${name}: ${addr}`);
+    const tx = contract.deploymentTransaction();
+    deployed[name] = { address: addr, txHash: tx?.hash ?? "0x" };
+    console.log(`${name}: ${addr} (tx: ${tx?.hash})`);
   }
 
   console.log("\nDeployed contracts:", JSON.stringify(deployed, null, 2));

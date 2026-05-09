@@ -6,6 +6,7 @@ import ProfileCard from '../components/ProfileCard';
 import StatsRow from '../components/StatsRow';
 import ContractsTable from '../components/ContractsTable';
 import ChainPicker from '../components/ChainPicker';
+import DeveloperProfileBanner from '../components/DeveloperProfileBanner';
 import { fetchResume } from '../api/client';
 import { useWalletContext } from '../contexts/WalletContext';
 
@@ -73,6 +74,9 @@ export default function Dashboard() {
   function openAnalyzer(address: string, chainId: number) {
     navigate(`/c/${chainId}/${address}`);
   }
+
+  // Determine if the viewed portfolio belongs to the connected wallet
+  const isOwnPortfolio = wallet.address && resume?.address?.toLowerCase() === wallet.address.toLowerCase();
 
   const chainCount = selectedChains === null ? DEFAULT_BLOCKSCOUT_CHAINS.length : selectedChains.length;
 
@@ -197,11 +201,17 @@ export default function Dashboard() {
         <>
           <ProfileCard resume={resume} />
           <StatsRow stats={resume.stats} />
+          {isOwnPortfolio && (
+            <DeveloperProfileBanner
+              developerAddress={resume.address}
+              developerEnsName={resume.ensName}
+            />
+          )}
           <ContractsTable
             deployments={resume.deployments}
             onContractVerified={handleContractVerified}
             onOpenAnalyzer={openAnalyzer}
-            wallet={wallet}
+            developerAddress={resume.address}
           />
         </>
       )}
