@@ -7,14 +7,16 @@ import EnscribeButton from './EnscribeButton';
 interface ContractCache { ensName: string; records: Record<string, string> }
 const cacheMap = new Map<string, ContractCache | null>();
 
-function useContractCache(address: string, developerAddress?: string): ContractCache | null | 'loading' {
+function useContractCache(address: string, developerAddress?: string, bust?: number): ContractCache | null | 'loading' {
   const cacheKey = developerAddress ? `${developerAddress}:${address}` : address;
   const [state, setState] = useState<ContractCache | null | 'loading'>(() => {
-    if (cacheMap.has(cacheKey)) return cacheMap.get(cacheKey) ?? null;
+    if (!bust && cacheMap.has(cacheKey)) return cacheMap.get(cacheKey) ?? null;
     return 'loading';
   });
   useEffect(() => {
-    if (cacheMap.has(cacheKey)) { setState(cacheMap.get(cacheKey) ?? null); return; }
+    if (!bust && cacheMap.has(cacheKey)) { setState(cacheMap.get(cacheKey) ?? null); return; }
+    setState('loading');
+    cacheMap.delete(cacheKey);
     const params = new URLSearchParams({ ...(developerAddress ? { developer: developerAddress } : {}) });
     fetch(`/api/cached/${address}?${params}`)
       .then((r) => r.json())
@@ -24,7 +26,8 @@ function useContractCache(address: string, developerAddress?: string): ContractC
         setState(result);
       })
       .catch(() => { cacheMap.set(cacheKey, null); setState(null); });
-  }, [cacheKey, address, developerAddress]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cacheKey, bust]);
   return state;
 }
 
@@ -196,7 +199,8 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, developerAd
   developerAddress?: string;
 }) {
   const name = d.contractName ?? d.blockscoutName;
-  const cache = useContractCache(d.address, developerAddress);
+  const [cacheBust, setCacheBust] = useState(0);
+  const cache = useContractCache(d.address, developerAddress, cacheBust);
   const [expanded, setExpanded] = useState(false);
   const hasCache = cache !== 'loading' && cache !== null;
 
@@ -314,6 +318,7 @@ function ContractRow({ contract: d, index, onVerify, onOpenAnalyzer, developerAd
                 contractAddress={d.address}
                 chainId={d.chainId}
                 developerAddress={developerAddress}
+                onMinted={() => { setCacheBust((n) => n + 1); setExpanded(true); }}
               />
             )}
             {!d.verified && !d.isScam && (

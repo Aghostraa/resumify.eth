@@ -1,6 +1,6 @@
 import { createPublicClient, http, namehash } from 'viem';
 import { sepolia } from 'viem/chains';
-import { getEnsName, getEnsText } from 'viem/ens';
+import { getEnsName } from 'viem/ens';
 import { ALL_TEXT_RECORD_KEYS } from '@contractid/core';
 import { deriveDeveloperLabel, PUBLIC_RESOLVER_SEPOLIA } from './developer-profile.js';
 
@@ -34,17 +34,6 @@ export function setCachedAnalysis(address: string, data: CachedAnalysis) {
   sessionCache.set(address.toLowerCase(), data);
 }
 
-async function fetchRecords(ensName: string): Promise<Record<string, string>> {
-  const client = getClient();
-  const records: Record<string, string> = {};
-  await Promise.allSettled(
-    ALL_TEXT_RECORD_KEYS.map(async (k) => {
-      const val = await getEnsText(client, { name: ensName, key: k }).catch(() => null);
-      if (val) records[k] = val;
-    }),
-  );
-  return records;
-}
 
 // Query ENS Sepolia subgraph for any name under our namespace whose addr record
 // resolves to this address. Slug names (e.g. 60957f-brokenaccesscontrol.hallmarked.eth)
@@ -124,7 +113,7 @@ export async function getCachedAnalysis(address: string, developerAddress?: stri
   try {
     const ensName = await getEnsName(client, { address: address as `0x${string}` });
     if (ensName?.endsWith(`.${NAMESPACE}`)) {
-      const records = await fetchRecords(ensName);
+      const records = await fetchRecordsDirect(ensName);
       if (Object.keys(records).length > 0) {
         const result = { ensName, records };
         sessionCache.set(key, result);
@@ -137,7 +126,7 @@ export async function getCachedAnalysis(address: string, developerAddress?: stri
   try {
     const ensName = await findNameByAddr(address);
     if (ensName) {
-      const records = await fetchRecords(ensName);
+      const records = await fetchRecordsDirect(ensName);
       if (Object.keys(records).length > 0) {
         const result = { ensName, records };
         sessionCache.set(key, result);

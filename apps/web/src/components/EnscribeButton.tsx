@@ -4,9 +4,10 @@ interface Props {
   contractAddress: string;
   chainId: number;
   developerAddress?: string;
+  onMinted?: (ensName: string) => void;
 }
 
-export default function EnscribeButton({ contractAddress, chainId, developerAddress }: Props) {
+export default function EnscribeButton({ contractAddress, chainId, developerAddress, onMinted }: Props) {
   const [state, setState] = useState<'idle' | 'busy' | 'done' | 'error'>('idle');
   const [ensName, setEnsName] = useState<string | null>(null);
   const [progress, setProgress] = useState<string>('');
@@ -40,6 +41,7 @@ export default function EnscribeButton({ contractAddress, chainId, developerAddr
         if (data.ens?.name) {
           setEnsName(data.ens.name);
           setState('done');
+          onMinted?.(data.ens.name);
         } else {
           setError('no ENS name minted — contract may not be verified');
           setState('error');
@@ -52,6 +54,7 @@ export default function EnscribeButton({ contractAddress, chainId, developerAddr
         if (data.ensName) {
           setEnsName(data.ensName);
           setState('done');
+          onMinted?.(data.ensName);
         } else {
           setState('idle');
         }
