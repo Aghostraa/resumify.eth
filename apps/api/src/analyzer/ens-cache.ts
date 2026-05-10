@@ -1,20 +1,10 @@
-import { createPublicClient, http, namehash } from 'viem';
+import { createPublicClient, http } from 'viem';
 import { sepolia } from 'viem/chains';
-import { getEnsName } from 'viem/ens';
+import { getEnsName, getEnsText } from 'viem/ens';
 import { ALL_TEXT_RECORD_KEYS } from '@contractid/core';
-import { deriveDeveloperLabel, PUBLIC_RESOLVER_SEPOLIA } from './developer-profile.js';
+import { deriveDeveloperLabel } from './developer-profile.js';
 
 const NAMESPACE = process.env.ENS_NAMESPACE ?? 'hallmarked.eth';
-
-const RESOLVER_TEXT_ABI = [
-  {
-    name: 'text',
-    type: 'function',
-    stateMutability: 'view',
-    inputs: [{ name: 'node', type: 'bytes32' }, { name: 'key', type: 'string' }],
-    outputs: [{ type: 'string' }],
-  },
-] as const;
 
 function getClient() {
   return createPublicClient({
@@ -34,17 +24,11 @@ export function setCachedAnalysis(_address: string, _data: CachedAnalysis) {
 
 async function fetchRecordsDirect(ensName: string): Promise<Record<string, string>> {
   const client = getClient();
-  const node = namehash(ensName);
   const records: Record<string, string> = {};
   await Promise.allSettled(
     ALL_TEXT_RECORD_KEYS.map(async (k) => {
       try {
-        const val = await client.readContract({
-          address: PUBLIC_RESOLVER_SEPOLIA,
-          abi: RESOLVER_TEXT_ABI,
-          functionName: 'text',
-          args: [node, k],
-        }) as string;
+        const val = await getEnsText(client, { name: ensName, key: k });
         if (val) records[k] = val;
       } catch { /* skip */ }
     }),
@@ -58,7 +42,7 @@ export async function getCachedAnalysis(address: string, developerAddress?: stri
   // Deterministic lookup — construct name directly, read live from ENS
   if (developerAddress) {
     try {
-      const devEns = await getEnsName(client, { address: developerAddress as `0x${string}` }).catch(() => null);
+      const devEns = await getEnsName(getClient(), { address: developerAddress as `0x${string}` }).catch(() => null);
       const devLabel = deriveDeveloperLabel(developerAddress, devEns);
       const ensName = `${address.slice(2, 8).toLowerCase()}.resume.${devLabel}.${NAMESPACE}`;
       const records = await fetchRecordsDirect(ensName);
