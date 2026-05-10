@@ -28,41 +28,8 @@ export interface CachedAnalysis {
   records: Record<string, string>;
 }
 
-const sessionCache = new Map<string, CachedAnalysis>();
-
-export function setCachedAnalysis(address: string, data: CachedAnalysis) {
-  sessionCache.set(address.toLowerCase(), data);
-}
-
-
-// Query ENS Sepolia subgraph for any name under our namespace whose addr record
-// resolves to this address. Slug names (e.g. 60957f-brokenaccesscontrol.hallmarked.eth)
-// can't be reconstructed from address alone — the subgraph is the right tool here.
-async function findNameByAddr(address: string): Promise<string | null> {
-  const endpoint =
-    process.env.ENS_SUBGRAPH_URL ??
-    'https://api.studio.thegraph.com/query/49574/enssepolia/version/latest';
-
-  const query = `{
-    domains(
-      first: 1
-      where: {
-        resolvedAddress: "${address.toLowerCase()}"
-        name_ends_with: ".${NAMESPACE}"
-      }
-    ) { name }
-  }`;
-
-  const res = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ query }),
-    signal: AbortSignal.timeout(5000),
-  });
-
-  if (!res.ok) return null;
-  const data = (await res.json()) as { data?: { domains?: { name: string }[] } };
-  return data?.data?.domains?.[0]?.name ?? null;
+export function setCachedAnalysis(_address: string, _data: CachedAnalysis) {
+  // ENS is the source of truth — no in-memory cache needed
 }
 
 async function fetchRecordsDirect(ensName: string): Promise<Record<string, string>> {
@@ -86,54 +53,27 @@ async function fetchRecordsDirect(ensName: string): Promise<Record<string, strin
 }
 
 export async function getCachedAnalysis(address: string, developerAddress?: string): Promise<CachedAnalysis | null> {
-  const key = address.toLowerCase();
-
-  // 1. Session cache
-  const cached = sessionCache.get(key);
-  if (cached) return cached;
-
   const client = getClient();
 
-  // 2. Deterministic developer-scoped lookup — instant, no subgraph
+  // Deterministic lookup — construct name directly, read live from ENS
   if (developerAddress) {
     try {
       const devEns = await getEnsName(client, { address: developerAddress as `0x${string}` }).catch(() => null);
       const devLabel = deriveDeveloperLabel(developerAddress, devEns);
       const ensName = `${address.slice(2, 8).toLowerCase()}.resume.${devLabel}.${NAMESPACE}`;
       const records = await fetchRecordsDirect(ensName);
-      if (Object.keys(records).length > 0) {
-        const result = { ensName, records };
-        sessionCache.set(key, result);
-        return result;
-      }
+      if (Object.keys(records).length > 0) return { ensName, records };
     } catch { /* fall through */ }
   }
 
-  // 3. ENS reverse lookup — works for Ownable/ReverseClaimer contracts
+  // ENS reverse lookup — works for Ownable/ReverseClaimer contracts
   try {
     const ensName = await getEnsName(client, { address: address as `0x${string}` });
     if (ensName?.endsWith(`.${NAMESPACE}`)) {
       const records = await fetchRecordsDirect(ensName);
-      if (Object.keys(records).length > 0) {
-        const result = { ensName, records };
-        sessionCache.set(key, result);
-        return result;
-      }
+      if (Object.keys(records).length > 0) return { ensName, records };
     }
   } catch { /* no reverse record */ }
-
-  // 4. Subgraph forward lookup — fallback for legacy slug names
-  try {
-    const ensName = await findNameByAddr(address);
-    if (ensName) {
-      const records = await fetchRecordsDirect(ensName);
-      if (Object.keys(records).length > 0) {
-        const result = { ensName, records };
-        sessionCache.set(key, result);
-        return result;
-      }
-    }
-  } catch { /* subgraph unavailable */ }
 
   return null;
 }
