@@ -372,29 +372,36 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
     ? scoreNum >= 80 ? '#30d158' : scoreNum >= 50 ? '#ffd60a' : '#ff453a'
     : 'rgba(255,255,255,0.2)';
 
-  const pattern = r['pattern'];
-  const sourcify = r['sourcify-verified'];
-  const flags = r['risk-flags'];
+  const pattern    = r['pattern'];
+  const sourcify   = r['sourcify-verified'];
+  const flags      = r['risk-flags'];
   const description = r['description'];
   const classifiedAt = r['classified-at'];
-  const chains = r['chains'];
-  const similarTo = r['similar-to'];
-  const security = r['security-findings'];
-  const ownerProject = r['owner-project'];
-  const issuedBy = r['issued-by'];
+  const chains     = r['chains'];
+  const issuedBy   = r['issued-by'];
+  const secRaw     = r['security-findings'] ?? '';
 
   const flagList = flags && flags !== 'none' ? flags.split(',').filter(Boolean) : [];
+  const secFindings: { check: string; passed: boolean }[] = secRaw
+    ? secRaw.split(',').filter(Boolean).map((s) => {
+        const [check, result] = s.split(':');
+        return { check, passed: result === 'safe' };
+      })
+    : [];
+
+  const circumference = 2 * Math.PI * 36;
+  const dash = hasScore ? (scoreNum / 100) * circumference : 0;
 
   return (
     <div className="mt-2 rounded-xl border border-white/[0.18] bg-white/[0.015] overflow-hidden">
-      {/* Header row */}
-      <div className="px-5 py-3 border-b border-white/[0.06] flex items-center justify-between gap-4 flex-wrap">
+
+      {/* Header */}
+      <div className="px-5 py-3 border-b border-white/[0.08] flex items-center justify-between gap-4 flex-wrap">
         <div className="flex items-center gap-2.5 min-w-0">
           <span className="hm-eyebrow-dot shrink-0" />
           <a
             href={`https://sepolia.app.ens.domains/${cache.ensName}`}
-            target="_blank"
-            rel="noreferrer"
+            target="_blank" rel="noreferrer"
             className="font-mono text-sm text-hm-green hover:underline truncate"
             title={cache.ensName}
           >
@@ -408,61 +415,87 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
           {issuedBy && (
             <a
               href={`https://sepolia.app.ens.domains/${issuedBy}`}
-              target="_blank"
-              rel="noreferrer"
+              target="_blank" rel="noreferrer"
               className="font-mono text-[9px] text-white/30 hover:text-hm-blue transition-colors shrink-0"
-              title={`Issued by ${issuedBy}`}
             >
               · {issuedBy}
             </a>
           )}
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          {hasScore && (
-            <div
-              className="font-display font-extralight text-xl leading-none tabular-nums border border-white/[0.18] rounded-lg px-3 py-1.5"
-              style={{ color: scoreColor }}
-            >
-              {scoreNum}<span className="text-[9px] text-white/20 ml-0.5">/100</span>
+        <a
+          href={`https://sourcify.dev/#/lookup/${address}`}
+          target="_blank" rel="noreferrer"
+          className="text-[9px] tracking-[0.16em] uppercase border border-white/[0.18] rounded-md px-2.5 py-1.5 text-white/35 hover:border-white/25 hover:text-white/70 transition-colors shrink-0"
+        >
+          Source ↗
+        </a>
+      </div>
+
+      {/* Score + meta */}
+      <div className="px-5 py-5 flex items-center gap-6 flex-wrap border-b border-white/[0.06]">
+        {/* Score circle */}
+        {hasScore && (
+          <div className="relative w-[88px] h-[88px] shrink-0">
+            <svg viewBox="0 0 90 90" className="w-[88px] h-[88px] -rotate-90">
+              <circle cx="45" cy="45" r="36" stroke="rgba(255,255,255,0.06)" strokeWidth="5" fill="none" />
+              <circle
+                cx="45" cy="45" r="36"
+                stroke={scoreColor} strokeWidth="5" fill="none"
+                strokeDasharray={`${dash} ${circumference - dash}`}
+                strokeLinecap="round" opacity="0.85"
+              />
+            </svg>
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="font-display font-extralight text-2xl leading-none" style={{ color: scoreColor }}>{scoreNum}</div>
+              <div className="text-[8px] text-white/[0.22]">/ 100</div>
             </div>
+          </div>
+        )}
+
+        {/* Meta fields */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-3 flex-1 min-w-0">
+          {pattern && <MetaField label="Pattern" value={pattern} />}
+          {sourcify && (
+            <MetaField
+              label="Sourcify"
+              value={sourcify === 'true' ? '✓ Full Match' : sourcify === 'partial' ? '◐ Partial' : '✗ None'}
+              color={sourcify === 'true' ? '#30d158' : sourcify === 'partial' ? '#ffd60a' : '#ff453a'}
+            />
           )}
-          <a
-            href={`https://sourcify.dev/#/lookup/${address}`}
-            target="_blank"
-            rel="noreferrer"
-            className="text-[9px] tracking-[0.16em] uppercase border border-white/[0.18] rounded-md px-2.5 py-1.5 text-white/35 hover:border-white/25 hover:text-white/70 transition-colors"
-          >
-            Source ↗
-          </a>
+          {chains && <MetaField label="Chains" value={chains} />}
+          {flagList.length > 0 && (
+            <MetaField
+              label="Risk Flags"
+              value={`${flagList.length} flag${flagList.length !== 1 ? 's' : ''}`}
+              color="#ffd60a"
+            />
+          )}
         </div>
       </div>
 
-      {/* Records grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 divide-x divide-y divide-white/[0.05]">
-        {pattern && <Cell label="Pattern" value={pattern} />}
-        {sourcify && (
-          <Cell
-            label="Sourcify"
-            value={sourcify === 'true' ? '✓ Verified' : sourcify === 'partial' ? '◐ Partial' : '✗ None'}
-            color={sourcify === 'true' ? '#30d158' : sourcify === 'partial' ? '#ffd60a' : '#ff453a'}
-          />
-        )}
-        {chains && <Cell label="Chain" value={chains} />}
-        {ownerProject && <Cell label="Project" value={ownerProject} />}
-        {flags && (
-          <Cell
-            label="Risk"
-            value={flagList.length > 0 ? `${flagList.length} flag${flagList.length !== 1 ? 's' : ''}` : 'Clean'}
-            color={flagList.length > 0 ? '#ffd60a' : '#30d158'}
-          />
-        )}
-        {security && security !== '' && <Cell label="Security" value={security} />}
-        {similarTo && <Cell label="Similar To" value={similarTo} />}
-      </div>
+      {/* Security findings */}
+      {secFindings.length > 0 && (
+        <div className="px-5 py-3 border-b border-white/[0.06] flex flex-wrap gap-2">
+          <span className="text-[8px] tracking-[0.22em] uppercase text-white/[0.22] self-center mr-1">Security</span>
+          {secFindings.map(({ check, passed }) => (
+            <span
+              key={check}
+              className="font-mono text-[9px] px-2 py-0.5 rounded border"
+              style={{
+                background: passed ? 'rgba(48,209,88,0.06)' : 'rgba(255,69,58,0.08)',
+                borderColor: passed ? 'rgba(48,209,88,0.20)' : 'rgba(255,69,58,0.22)',
+                color: passed ? '#30d158' : '#ff453a',
+              }}
+            >
+              {passed ? '✓' : '✗'} {check}
+            </span>
+          ))}
+        </div>
+      )}
 
-      {/* Flag chips */}
+      {/* Risk flag chips */}
       {flagList.length > 0 && (
-        <div className="px-4 py-2.5 border-t border-white/[0.05] flex flex-wrap gap-1.5">
+        <div className="px-5 py-3 border-b border-white/[0.06] flex flex-wrap gap-1.5">
           {flagList.map((f) => (
             <span
               key={f}
@@ -476,7 +509,7 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
 
       {/* Description */}
       {description && (
-        <p className="px-5 py-3 border-t border-white/[0.05] text-[11px] text-white/50 leading-relaxed">
+        <p className="px-5 py-4 text-[11px] text-white/50 leading-relaxed">
           {description}
         </p>
       )}
@@ -484,11 +517,11 @@ function ExpandedAnalysis({ cache, address }: { cache: ContractCache; address: s
   );
 }
 
-function Cell({ label, value, color }: { label: string; value: string; color?: string }) {
+function MetaField({ label, value, color }: { label: string; value: string; color?: string }) {
   return (
-    <div className="px-4 py-2.5">
-      <div className="text-[7px] font-light tracking-[0.24em] uppercase text-white/[0.16] mb-1">{label}</div>
-      <div className="font-mono text-[10px] truncate" style={{ color: color ?? 'rgba(255,255,255,0.7)' }}>{value}</div>
+    <div className="flex flex-col gap-1">
+      <div className="text-[8px] font-light tracking-[0.24em] uppercase text-white/[0.18]">{label}</div>
+      <div className="font-mono text-[10px]" style={{ color: color ?? 'rgba(255,255,255,0.75)' }}>{value}</div>
     </div>
   );
 }

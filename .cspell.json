@@ -1,0 +1,22 @@
+{
+  "version": "0.2",
+  "words": [
+    "Resumify", "resumify",
+    "Sourcify", "sourcify",
+    "Blockscout", "blockscout",
+    "viem", "ensjs",
+    "reentrancy", "Reentrancy", "REENTRANCY",
+    "contractid",
+    "flyctl",
+    "ENSIP", "ensip",
+    "hallmarked",
+    "namehash",
+    "multicall",
+    "subname", "subnames",
+    "typechain",
+    "hardhat",
+    "wagmi",
+    "drpc",
+    "pnpm"
+  ]
+}
