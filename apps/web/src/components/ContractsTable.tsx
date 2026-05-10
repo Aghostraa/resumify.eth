@@ -10,11 +10,11 @@ const cacheMap = new Map<string, ContractCache | null>();
 function useContractCache(address: string, developerAddress?: string, bust?: number): ContractCache | null | 'loading' {
   const cacheKey = developerAddress ? `${developerAddress}:${address}` : address;
   const [state, setState] = useState<ContractCache | null | 'loading'>(() => {
-    if (!bust && cacheMap.has(cacheKey)) return cacheMap.get(cacheKey) ?? null;
+    if (!bust && cacheMap.has(cacheKey)) return cacheMap.get(cacheKey)!;
     return 'loading';
   });
   useEffect(() => {
-    if (!bust && cacheMap.has(cacheKey)) { setState(cacheMap.get(cacheKey) ?? null); return; }
+    if (!bust && cacheMap.has(cacheKey)) { setState(cacheMap.get(cacheKey)!); return; }
     setState('loading');
     cacheMap.delete(cacheKey);
     const params = new URLSearchParams({ ...(developerAddress ? { developer: developerAddress } : {}) });
@@ -22,10 +22,10 @@ function useContractCache(address: string, developerAddress?: string, bust?: num
       .then((r) => r.json())
       .then((d: { cached: boolean; ensName?: string; records?: Record<string, string> }) => {
         const result = d.cached && d.ensName ? { ensName: d.ensName, records: d.records ?? {} } : null;
-        cacheMap.set(cacheKey, result);
+        if (result) cacheMap.set(cacheKey, result);
         setState(result);
       })
-      .catch(() => { cacheMap.set(cacheKey, null); setState(null); });
+      .catch(() => { setState(null); });
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [cacheKey, bust]);
   return state;
