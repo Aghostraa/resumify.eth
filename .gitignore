@@ -24,3 +24,4 @@ apps/*/vite.config.js.map
 .vscode/
 .idea/
 llms.txt
+.vercel
