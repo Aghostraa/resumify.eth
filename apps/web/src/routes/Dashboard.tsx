@@ -118,20 +118,7 @@ export default function Dashboard() {
           <SearchBar onSearch={search} loading={false} />
           <div className="flex items-center justify-between gap-3 px-1">
             <div className="text-[10px] font-light tracking-[0.22em] uppercase text-white/55">
-              Try —{' '}
-              <span
-                onClick={() => void search('vitalik.eth')}
-                className="text-white cursor-pointer hover:text-hm-green transition-colors"
-              >
-                vitalik.eth
-              </span>{' '}
-              ·{' '}
-              <span
-                onClick={() => void search('nick.eth')}
-                className="text-white cursor-pointer hover:text-hm-green transition-colors"
-              >
-                nick.eth
-              </span>
+              Connect your dev address to see deployed contracts
             </div>
             <ChainPicker selected={selectedChains} onChange={handleChainsChange} />
           </div>

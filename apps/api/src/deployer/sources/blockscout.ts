@@ -68,7 +68,7 @@ async function fetchPage(
   for (const [k, v] of Object.entries(params)) url.searchParams.set(k, v);
 
   for (let attempt = 0; attempt <= MAX_RETRIES; attempt++) {
-    const res = await fetch(url.toString());
+    const res = await fetch(url.toString(), { signal: AbortSignal.timeout(5_000) });
     const text = await res.text();
 
     if (!useFallback && isCreditsError(res.status, text)) {

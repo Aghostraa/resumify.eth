@@ -20,7 +20,7 @@ export default function SearchBar({ onSearch, loading }: Props) {
         type="text"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="vitalik.eth or 0xd8dA…"
+        placeholder="yourname.eth or 0x…"
         className="hm-input"
         disabled={loading}
         autoFocus
