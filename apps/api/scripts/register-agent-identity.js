@@ -164,12 +164,17 @@ const agentContext = JSON.stringify({
   },
 }, null, 2);
 
+const PATTERNS_URL = 'https://raw.githubusercontent.com/Aghostraa/resumify.eth/main/apps/api/cache/patterns.json';
+
 // Standard ENS profile records (ENSIP-18) + ENSIP-26 agent records
 const records = {
   // ENSIP-18 profile
   'name':        `Hallmark Analyzer (${AGENT_LABEL})`,
   'description': 'AI agent · smart contract identity · pattern classification · trust scoring · ENS subname issuance',
   'url':         WEB_URL,
+
+  // Pattern library — fetched by the pipeline at runtime
+  'pattern-library': PATTERNS_URL,
 
   // ENSIP-26 agent records
   'agent-context':        agentContext,

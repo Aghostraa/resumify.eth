@@ -1,7 +1,10 @@
 import Anthropic from '@anthropic-ai/sdk';
-import { readFileSync } from 'node:fs';
+import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
+import { createPublicClient, http } from 'viem';
+import { sepolia } from 'viem/chains';
+import { getEnsText } from 'viem/ens';
 
 import { fetchSourcify } from './sourcify.js';
 import { calculateScore, type PatternEntry, type ScoreResult } from './scorer.js';
@@ -14,17 +17,47 @@ import { TEXT_RECORD_KEYS } from '@contractid/core';
 import { isSupportedChain } from '@contractid/config';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const PATTERNS_PATH = resolve(__dirname, '../../cache/patterns.json');
+const PATTERNS_FALLBACK = resolve(__dirname, '../../cache/patterns.json');
+const AGENT_ENS = 'analyzer-v0-1.hallmarked.eth';
+const PATTERN_RECORD_KEY = 'pattern-library';
+
+const sepoliaClient = createPublicClient({
+  chain: sepolia,
+  transport: http(process.env.RPC_URL_SEPOLIA ?? 'https://sepolia.drpc.org'),
+});
 
 const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
 const MODEL = process.env.CLAUDE_MODEL ?? 'claude-sonnet-4-6';
 
 let patternLibraryCache: PatternEntry[] | null = null;
-function loadPatternLibrary(): PatternEntry[] {
-  if (!patternLibraryCache) {
-    patternLibraryCache = JSON.parse(readFileSync(PATTERNS_PATH, 'utf8')) as PatternEntry[];
+
+async function loadPatternLibrary(): Promise<PatternEntry[]> {
+  if (patternLibraryCache) return patternLibraryCache;
+
+  try {
+    const record = await getEnsText(sepoliaClient, { name: AGENT_ENS, key: PATTERN_RECORD_KEY });
+    if (record) {
+      const url = record.startsWith('http') || record.startsWith('ipfs')
+        ? record
+        : null;
+      const json = url
+        ? await fetch(url).then((r) => r.json())
+        : JSON.parse(record);
+      patternLibraryCache = json as PatternEntry[];
+      console.log(`  [patterns] loaded ${patternLibraryCache.length} patterns from ${AGENT_ENS}`);
+      return patternLibraryCache;
+    }
+  } catch (err) {
+    console.warn(`  [patterns] ENS fetch failed, falling back to local file:`, err);
   }
-  return patternLibraryCache;
+
+  if (existsSync(PATTERNS_FALLBACK)) {
+    patternLibraryCache = JSON.parse(readFileSync(PATTERNS_FALLBACK, 'utf8')) as PatternEntry[];
+    console.log(`  [patterns] loaded ${patternLibraryCache.length} patterns from local cache`);
+    return patternLibraryCache;
+  }
+
+  throw new Error(`Pattern library unavailable: set "${PATTERN_RECORD_KEY}" text record on ${AGENT_ENS} or provide cache/patterns.json`);
 }
 
 interface SourcifyResult {
@@ -92,7 +125,7 @@ export async function runPipeline(input: PipelineInput, onStep?: (step: Pipeline
   // [1] FETCH
   console.log('  [1/9] Sourcify fetch…');
   const sourcify = (await fetchSourcify({ chainId, address })) as SourcifyResult;
-  const patterns = loadPatternLibrary();
+  const patterns = await loadPatternLibrary();
   const emit = (step: PipelineStep) => { steps.push(step); onStep?.(step); };
 
   emit({ step: 'fetch', ok: true, detail: `status=${sourcify.status} verified=${!!sourcify.verified}` });
